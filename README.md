@@ -18,3 +18,9 @@ View your app in AI Studio: https://ai.studio/apps/91631878-ee6b-4670-9a8d-55966
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
+
+## Oyun ve program kategorileri
+
+Dağıtımdan sonra admin hesabıyla **Admin → Kategoriler → Oyun & Program Kategorilerini Ekle** düğmesine basın. Dört ana kategori ve 39 alt başlık Firestore'a tek işlemde kaydedilir; menü ve içerik formu otomatik güncellenir. Mevcut başlıklar, sıralamalar ve içerikler korunur. Düğme tekrar kullanıldığında aynı alt başlıklar çoğaltılmaz. Sonrasında kategoriler panelden düzenlenebilir veya silinebilir.
+
+Başlıklar `src/lib/categories.ts` içinde tanımlıdır. Filtre bağlantıları Türkçe karakterler ve `&` işareti için URLSearchParams kullanır.
