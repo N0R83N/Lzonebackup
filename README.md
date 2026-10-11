@@ -1,23 +1,16 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# L9Zone
 
-# Run and deploy your AI Studio app
+Oyun ve program paylaşım sitesi. Bu site Nijat tarafından yapıldı. (Noren)
 
-This contains everything you need to run your app locally.
+## Yerel çalıştırma
 
-View your app in AI Studio: https://ai.studio/apps/91631878-ee6b-4670-9a8d-559666666ae7
+Node.js kurulu olmalıdır.
 
-## Run Locally
+1. Bağımlılıkları yükleyin: `npm install`
+2. Uygulamayı başlatın: `npm run dev`
+3. Üretim çıktısını oluşturun: `npm run build`
 
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+Firebase bağlantısı `src/firebase.ts` ve `firebase-applet-config.json` üzerinden yapılandırılır.
 
 ## Oyun ve program kategorileri
 
