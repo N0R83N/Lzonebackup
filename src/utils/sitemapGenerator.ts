@@ -43,21 +43,45 @@ export function generateSitemapXml(
     priority: '1.0'
   });
 
-  // 2. Kategoriler
-  const uniqueCategories = new Set<string>();
-  categories.forEach(c => uniqueCategories.add(c.name));
-  softwares.forEach(s => {
-    if (s.category) uniqueCategories.add(s.category);
-  });
+  // 2. Kategoriler ve Alt Kategoriler
+  const addedCategories = new Set<string>();
 
-  uniqueCategories.forEach(cat => {
-    const encodedCat = encodeURIComponent(cat);
+  categories.forEach(cat => {
+    addedCategories.add(cat.name);
+    const encodedCat = encodeURIComponent(cat.name);
     urls.push({
       loc: `${baseUrl}/?category=${encodedCat}`,
       lastmod: today,
       changefreq: 'daily',
       priority: '0.9'
     });
+
+    if (Array.isArray(cat.subcategories)) {
+      cat.subcategories.forEach(sub => {
+        if (sub && sub.trim()) {
+          const encodedSub = encodeURIComponent(sub.trim());
+          urls.push({
+            loc: `${baseUrl}/?category=${encodedCat}&subcategory=${encodedSub}`,
+            lastmod: today,
+            changefreq: 'weekly',
+            priority: '0.8'
+          });
+        }
+      });
+    }
+  });
+
+  // Kategorisi tanımlı olup category listesinde olmayan varsa ekle
+  softwares.forEach(s => {
+    if (s.category && !addedCategories.has(s.category)) {
+      addedCategories.add(s.category);
+      urls.push({
+        loc: `${baseUrl}/?category=${encodeURIComponent(s.category)}`,
+        lastmod: today,
+        changefreq: 'daily',
+        priority: '0.85'
+      });
+    }
   });
 
   // 3. Yazılım & Oyun Detay Sayfaları (Doğrudan Google'da aranacak sayfalar)
