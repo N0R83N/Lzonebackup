@@ -30,7 +30,8 @@
       "properties": {
         "nickname": { "type": "string", "description": "Kullanıcı adı" },
         "email": { "type": "string", "description": "E-posta (opsiyonel)" },
-        "role": { "type": "string", "enum": ["admin", "user"], "description": "Kullanıcı rolü" }
+        "role": { "type": "string", "enum": ["admin", "moderator", "user"], "description": "Kullanıcı rolü" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Kayıt tarihi" }
       },
       "required": ["nickname", "role"]
     },
@@ -56,6 +57,21 @@
         "parentId": { "type": "string", "description": "Yanıtlanan yorumun ID'si (opsiyonel)" }
       },
       "required": ["nickname", "content", "createdAt"]
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Genel uygulama ve destek bağlantıları ayarları.",
+      "type": "object",
+      "properties": {
+        "patreonUrl": { "type": "string", "description": "Patreon profili URL'si" },
+        "patreonEnabled": { "type": "boolean", "description": "Patreon butonu aktif mi?" },
+        "patreonLabel": { "type": "string", "description": "Patreon buton metni" },
+        "kofiUrl": { "type": "string", "description": "Ko-fi profili URL'si" },
+        "kofiEnabled": { "type": "boolean", "description": "Ko-fi butonu aktif mi?" },
+        "kofiLabel": { "type": "string", "description": "Ko-fi buton metni" },
+        "customLinks": { "type": "array", "description": "Özel destek bağlantıları listesi" },
+        "heading": { "type": "string", "description": "Destek başlığı" }
+      }
     }
   },
   "firestore": {
@@ -74,6 +90,10 @@
     "/software/{softwareId}/comments/{commentId}": {
       "schema": "comments",
       "description": "İçeriklere yapılan yorumlar."
+    },
+    "/settings/{settingId}": {
+      "schema": "settings",
+      "description": "Genel ayarlar ve destek bağlantıları."
     }
   }
 }

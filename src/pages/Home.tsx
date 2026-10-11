@@ -4,6 +4,7 @@ import { db } from '../firebase';
 import { collection, query, orderBy, onSnapshot, where } from 'firebase/firestore';
 import { Software } from '../types';
 import SoftwareCard from '../components/SoftwareCard';
+import SupportLinksBar from '../components/SupportLinksBar';
 import { Sparkles, Terminal, Cpu, Zap } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -56,8 +57,11 @@ export default function Home() {
         <section className="relative py-12 overflow-hidden border-b border-zinc-900">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,#1d4ed822,transparent_60%)]" />
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-            <div className="flex items-center space-x-2 mb-8">
-              <h2 className="text-xl font-bold text-white tracking-tight uppercase">Öne Çıkanlar</h2>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+              <div className="flex items-center space-x-2">
+                <h2 className="text-xl font-bold text-white tracking-tight uppercase">Öne Çıkanlar</h2>
+              </div>
+              <SupportLinksBar />
             </div>
 
             <div className="flex overflow-x-auto pb-8 space-x-6 scrollbar-hide snap-x">

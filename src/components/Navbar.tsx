@@ -6,7 +6,7 @@ import { collection, query, orderBy, onSnapshot, doc, getDoc } from 'firebase/fi
 import { LogOut, User, Shield, Menu, X, ChevronDown, Zap, Search, LogIn } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Category } from '../types';
-import { categoryUrl } from '../lib/categories';
+import SupportLinksBar from './SupportLinksBar';
 
 export default function Navbar() {
   const [user, setUser] = useState(auth.currentUser);
@@ -99,7 +99,7 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Menu */}
-          <div className="hidden xl:flex items-center space-x-2">
+          <div className="hidden md:flex items-center space-x-6">
             <Link to="/" className="px-3 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-zinc-900 rounded-xl transition-all">Ana Sayfa</Link>
             
             {categories.map((cat) => (
@@ -109,7 +109,7 @@ export default function Navbar() {
                 onMouseEnter={() => setActiveDropdown(cat.id)}
                 onMouseLeave={() => setActiveDropdown(null)}
               >
-                <button type="button" aria-expanded={activeDropdown === cat.id} onClick={() => setActiveDropdown(activeDropdown === cat.id ? null : cat.id)} className="px-3 py-2 text-sm font-medium text-gray-300 group-hover:text-white group-hover:bg-zinc-900 rounded-xl transition-all flex items-center space-x-1">
+                <button className="px-3 py-2 text-sm font-medium text-gray-300 group-hover:text-white group-hover:bg-zinc-900 rounded-xl transition-all flex items-center space-x-1">
                   <span>{cat.name}</span>
                   <ChevronDown className="w-3 h-3 group-hover:rotate-180 transition-transform" />
                 </button>
@@ -119,7 +119,7 @@ export default function Navbar() {
                   "absolute top-full left-0 w-64 pt-2 transition-all duration-200 origin-top-left",
                   activeDropdown === cat.id ? "opacity-100 scale-100 visible" : "opacity-0 scale-95 invisible"
                 )}>
-                  <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-3 shadow-2xl shadow-black max-h-[70vh] overflow-y-auto">
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-3 shadow-2xl shadow-black">
                     <div className="grid grid-cols-1 gap-1">
                       <div className="px-3 py-2 text-[10px] font-bold text-zinc-600 uppercase tracking-widest border-b border-zinc-800 mb-2">
                         {cat.name} - Alt Kategoriler
@@ -127,7 +127,7 @@ export default function Navbar() {
                       {cat.subcategories.map((sub) => (
                         <Link
                           key={sub}
-                          to={categoryUrl(cat.name, sub)}
+                          to={`/?category=${cat.name}&subcategory=${sub}`}
                           className="px-3 py-2 text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-all flex items-center justify-between group/item"
                         >
                           <span>{sub}</span>
@@ -177,7 +177,7 @@ export default function Navbar() {
           </div>
 
           {/* Mobile menu button */}
-          <div className="xl:hidden">
+          <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="text-gray-400 hover:text-white p-2"
@@ -190,7 +190,7 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="xl:hidden bg-black border-b border-blue-900/30 px-4 pt-2 pb-4 space-y-2 max-h-[80vh] overflow-y-auto">
+        <div className="md:hidden bg-black border-b border-blue-900/30 px-4 pt-2 pb-4 space-y-2 max-h-[80vh] overflow-y-auto">
           {/* Mobile Search */}
           <form onSubmit={handleSearch} className="relative mb-4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
@@ -213,7 +213,7 @@ export default function Navbar() {
               {cat.subcategories.map((sub) => (
                 <Link
                   key={sub}
-                  to={categoryUrl(cat.name, sub)}
+                  to={`/?category=${cat.name}&subcategory=${sub}`}
                   className="block text-gray-400 hover:text-white py-2 pl-4 text-sm"
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -254,6 +254,11 @@ export default function Navbar() {
               Giriş Yap
             </Link>
           )}
+
+          <div className="pt-3 border-t border-zinc-800/80">
+            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-2">Bize Destek Olun</p>
+            <SupportLinksBar />
+          </div>
         </div>
       )}
     </nav>

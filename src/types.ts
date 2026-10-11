@@ -45,3 +45,26 @@ export interface UserProfile {
   role: UserRole;
   createdAt?: any;
 }
+
+export type SupportIconType = 'patreon' | 'kofi' | 'coffee' | 'heart' | 'gift' | 'dollar' | 'link';
+
+export interface CustomSupportLink {
+  id: string;
+  title: string;
+  url: string;
+  icon: SupportIconType;
+  color?: string;
+  enabled: boolean;
+}
+
+export interface SupportSettings {
+  patreonUrl: string;
+  patreonEnabled: boolean;
+  patreonLabel?: string;
+  kofiUrl: string;
+  kofiEnabled: boolean;
+  kofiLabel?: string;
+  customLinks: CustomSupportLink[];
+  heading?: string;
+  showOnHome?: boolean;
+}

@@ -6,22 +6,42 @@ service cloud.firestore {
     // ===============================================================
     //
     // Collection: software
-    // Document ID: auto-generated
     // Fields:
     //   - title: string (required, 1-100 chars)
     //   - description: string (required, 1-10000 chars)
-    //   - mediaUrl: string (required, valid URL)
+    //   - mediaUrl: string (required, 1-350000 chars - supports URLs and compressed WebP)
     //   - mediaType: string (required, 'image' or 'youtube')
-    //   - createdAt: timestamp (required)
-    //   - authorUid: string (required, matches admin UID)
+    //   - isFeatured: bool (optional)
+    //   - version: string (optional, <= 20 chars)
+    //   - category: string (optional, <= 50 chars)
+    //   - subcategory: string (optional, <= 50 chars)
+    //   - downloadUrl: string (optional, <= 2048 chars)
+    //   - downloadUrl2: string (optional, <= 2048 chars)
+    //   - tags: list (optional)
+    //   - isPremium: bool (optional)
+    //   - specialNote: string (optional, <= 1000 chars)
+    //   - createdAt: timestamp (required, immutable)
+    //   - authorUid: string (required, immutable)
     //
     // Collection: users
-    // Document ID: user UID
     // Fields:
     //   - nickname: string (required, 1-50 chars)
-    //   - email: string (optional, valid email)
-    //   - role: string (required, 'admin' or 'user')
+    //   - email: string (optional, valid email format)
+    //   - role: string (required, 'admin', 'moderator', or 'user')
+    //   - createdAt: timestamp (optional)
     //
+    // Collection: categories
+    // Fields:
+    //   - name: string (required, 1-100 chars)
+    //   - subcategories: list (required)
+    //   - order: number (required)
+    //
+    // Subcollection: comments
+    // Fields:
+    //   - nickname: string (required, 1-30 chars)
+    //   - content: string (required, 1-500 chars)
+    //   - createdAt: timestamp (required)
+    //   - parentId: string (optional)
     // ===============================================================
 
     // Helper Functions
@@ -29,12 +49,29 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isSuperAdmin() {
+      return isAuthenticated() && request.auth.token.email == "nijatemiraslanov@gmail.com";
+    }
+
     function isAdmin() {
       return isAuthenticated() &&
         (
-          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
-          request.auth.token.email == "nijatemiraslanov@gmail.com"
+          isSuperAdmin() ||
+          (
+            exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+          )
+        );
+    }
+
+    function isStaff() {
+      return isAuthenticated() &&
+        (
+          isAdmin() ||
+          (
+            exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'moderator'
+          )
         );
     }
 
@@ -42,26 +79,37 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    function isValidSoftware(data) {
+    function isValidSoftwareBase(data) {
       return data.title is string && data.title.size() > 0 && data.title.size() <= 100 &&
              data.description is string && data.description.size() > 0 && data.description.size() <= 10000 &&
-             data.mediaUrl is string && data.mediaUrl.size() > 0 &&
+             data.mediaUrl is string && data.mediaUrl.size() > 0 && data.mediaUrl.size() <= 350000 &&
              data.mediaType in ['image', 'youtube'] &&
              (!('isFeatured' in data) || data.isFeatured is bool) &&
              (!('version' in data) || data.version == null || (data.version is string && data.version.size() <= 20)) &&
              (!('category' in data) || data.category == null || (data.category is string && data.category.size() <= 50)) &&
              (!('subcategory' in data) || data.subcategory == null || (data.subcategory is string && data.subcategory.size() <= 50)) &&
-             (!('downloadUrl' in data) || data.downloadUrl == null || (data.downloadUrl is string)) &&
-             (!('downloadUrl2' in data) || data.downloadUrl2 == null || (data.downloadUrl2 is string)) &&
+             (!('downloadUrl' in data) || data.downloadUrl == null || (data.downloadUrl is string && data.downloadUrl.size() <= 2048)) &&
+             (!('downloadUrl2' in data) || data.downloadUrl2 == null || (data.downloadUrl2 is string && data.downloadUrl2.size() <= 2048)) &&
              (!('tags' in data) || data.tags == null || (data.tags is list)) &&
              (!('isPremium' in data) || data.isPremium is bool) &&
-             (!('specialNote' in data) || data.specialNote == null || (data.specialNote is string && data.specialNote.size() <= 1000)) &&
+             (!('specialNote' in data) || data.specialNote == null || (data.specialNote is string && data.specialNote.size() <= 1000));
+    }
+
+    function isValidSoftwareCreate(data) {
+      return isValidSoftwareBase(data) &&
              data.createdAt is timestamp &&
              data.authorUid == request.auth.uid;
     }
 
+    // STRICT IMMUTABILITY: authorUid and createdAt cannot be changed by anyone during update
+    function isValidSoftwareUpdate(data) {
+      return isValidSoftwareBase(data) &&
+             data.createdAt == resource.data.createdAt &&
+             data.authorUid == resource.data.authorUid;
+    }
+
     function isValidCategory(data) {
-      return data.name is string && data.name.size() > 0 &&
+      return data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
              data.subcategories is list &&
              data.order is number;
     }
@@ -75,36 +123,47 @@ service cloud.firestore {
 
     function isValidUser(data) {
       return data.nickname is string && data.nickname.size() > 0 && data.nickname.size() <= 50 &&
-             (!('email' in data) || (data.email is string && data.email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"))) &&
-             data.role in ['admin', 'user'];
+             (!('email' in data) || data.email == null || (data.email is string && (data.email.size() == 0 || data.email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")))) &&
+             (!('createdAt' in data) || data.createdAt is timestamp) &&
+             data.role in ['admin', 'moderator', 'user'];
     }
 
     // Rules
     match /software/{softwareId} {
       allow read: if true; // Publicly readable
-      allow create: if isAdmin() && isValidSoftware(request.resource.data);
-      allow update: if isAdmin() && isValidSoftware(request.resource.data);
-      allow delete: if isAdmin();
+      allow create: if isStaff() && isValidSoftwareCreate(request.resource.data);
+      allow update: if isStaff() && isValidSoftwareUpdate(request.resource.data);
+      allow delete: if isStaff();
     }
 
     match /users/{userId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data);
-      allow update: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isAdmin());
-      allow delete: if false;
+      // REGISTRATION GUARD: New users CANNOT register as admin or moderator. Only super admin can bootstrap.
+      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) &&
+                       (request.resource.data.role == 'user' || isSuperAdmin());
+      // ROLE ESCALATION GUARD: Normal users cannot change their own role. Only admin can modify roles.
+      allow update: if (isOwner(userId) && isValidUser(request.resource.data) && request.resource.data.role == resource.data.role) ||
+                       (isAdmin() && isValidUser(request.resource.data));
+      // Only Admin can delete users from Firestore
+      allow delete: if isAdmin();
     }
 
     match /categories/{categoryId} {
       allow read: if true;
-      allow create: if isAdmin() && isValidCategory(request.resource.data);
-      allow update: if isAdmin() && isValidCategory(request.resource.data);
-      allow delete: if isAdmin();
+      allow create: if isStaff() && isValidCategory(request.resource.data);
+      allow update: if isStaff() && isValidCategory(request.resource.data);
+      allow delete: if isStaff();
     }
 
     match /software/{softwareId}/comments/{commentId} {
       allow read: if true;
       allow create: if isValidComment(request.resource.data);
-      allow delete: if isAdmin() || (request.time < resource.data.createdAt + duration.value(30, 'm'));
+      allow delete: if isStaff() || (request.time < resource.data.createdAt + duration.value(30, 'm'));
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isStaff();
     }
   }
 }

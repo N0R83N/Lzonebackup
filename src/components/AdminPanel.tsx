@@ -2,18 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebase';
 import {
   collection, addDoc, query, orderBy, onSnapshot,
-  deleteDoc, doc, Timestamp, updateDoc, getDoc, getDocs, runTransaction, arrayUnion,
+  deleteDoc, doc, Timestamp, updateDoc, getDoc, setDoc,
 } from 'firebase/firestore';
-import { Software, MediaType, Category, UserRole, UserProfile } from '../types';
+import { Software, MediaType, Category, UserRole, UserProfile, SupportSettings, CustomSupportLink, SupportIconType } from '../types';
 import {
   Plus, Trash2, Video, Image as ImageIcon, AlertCircle, CheckCircle2,
   Layers, Bold, Italic, Heading1, Heading2, List, Link2, Quote, Info,
   Edit2, X as CloseIcon, Users, Shield, Crown, Search, UserCheck,
+  Heart, Gift, Coffee, DollarSign, ExternalLink, Link as LinkIcon, Sparkles, Check, Globe,
 } from 'lucide-react';
+import { PatreonIcon, KofiIcon, SupportIconRenderer } from './SupportIcons';
+import { DEFAULT_SUPPORT_SETTINGS } from './SupportLinksBar';
 import { cn } from '../lib/utils';
-import { DEFAULT_CATEGORIES } from '../lib/categories';
 
-type ActiveTab = 'content' | 'categories' | 'users';
+type ActiveTab = 'content' | 'categories' | 'users' | 'support';
 
 /* ─── Rol badge renkleri ─── */
 const roleMeta: Record<UserRole, { label: string; color: string; icon: React.ReactNode }> = {
@@ -103,33 +105,38 @@ export default function AdminPanel() {
     return unsub;
   }, [currentUserRole]);
 
+  /* ─── Destek Bağlantıları state ─── */
+  const [supportSettings, setSupportSettings] = useState<SupportSettings>(DEFAULT_SUPPORT_SETTINGS);
+  const [supportSaving, setSupportSaving] = useState(false);
+  const [newCustomTitle, setNewCustomTitle] = useState('');
+  const [newCustomUrl, setNewCustomUrl] = useState('');
+  const [newCustomIcon, setNewCustomIcon] = useState<SupportIconType>('heart');
+  const [newCustomColor, setNewCustomColor] = useState('#3b82f6');
+
+  /* ─── Destek ayarları subscription ─── */
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'settings', 'support'), (snap) => {
+      if (snap.exists()) {
+        const data = snap.data() as Partial<SupportSettings>;
+        setSupportSettings({
+          patreonUrl: data.patreonUrl ?? DEFAULT_SUPPORT_SETTINGS.patreonUrl,
+          patreonEnabled: data.patreonEnabled ?? DEFAULT_SUPPORT_SETTINGS.patreonEnabled,
+          patreonLabel: data.patreonLabel ?? DEFAULT_SUPPORT_SETTINGS.patreonLabel,
+          kofiUrl: data.kofiUrl ?? DEFAULT_SUPPORT_SETTINGS.kofiUrl,
+          kofiEnabled: data.kofiEnabled ?? DEFAULT_SUPPORT_SETTINGS.kofiEnabled,
+          kofiLabel: data.kofiLabel ?? DEFAULT_SUPPORT_SETTINGS.kofiLabel,
+          customLinks: Array.isArray(data.customLinks) ? data.customLinks : [],
+          heading: data.heading ?? DEFAULT_SUPPORT_SETTINGS.heading,
+          showOnHome: data.showOnHome ?? DEFAULT_SUPPORT_SETTINGS.showOnHome,
+        });
+      }
+    });
+    return unsub;
+  }, []);
+
   /* ════════════════════════════════════════
      KATEGORİ HANDLER'LARI
   ════════════════════════════════════════ */
-  const handleImportCategories = async () => {
-    setLoading(true); setError(null); setSuccess(null);
-    try {
-      const existing = await getDocs(collection(db, 'categories'));
-      const nextOrder = Math.max(-1, ...existing.docs.map(d => Number(d.data().order) || 0)) + 1;
-      const targets = DEFAULT_CATEGORIES.map((preset, index) => {
-        const match = existing.docs.find(d => d.data().name.trim().toLocaleLowerCase('tr') === preset.name.toLocaleLowerCase('tr'));
-        return { preset, ref: match?.ref ?? doc(db, 'categories', preset.id), order: nextOrder + index };
-      });
-      await runTransaction(db, async transaction => {
-        const snapshots = await Promise.all(targets.map(target => transaction.get(target.ref)));
-        targets.forEach(({ preset, ref, order }, index) => {
-          if (snapshots[index].exists()) {
-            transaction.update(ref, { subcategories: arrayUnion(...preset.subcategories) });
-          } else {
-            transaction.set(ref, { name: preset.name, subcategories: preset.subcategories, order });
-          }
-        });
-      });
-      setSuccess('Oyun, yazılım, işletim sistemi ve mobil kategorileri eklendi. Mevcut başlıklar korundu.');
-    } catch (err: any) { setError('Kategoriler eklenemedi: ' + err.message); }
-    finally { setLoading(false); }
-  };
-
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCatName) return;
@@ -285,6 +292,64 @@ export default function AdminPanel() {
   };
 
   /* ════════════════════════════════════════
+     DESTEK BAĞLANTILARI HANDLER'LARI
+  ════════════════════════════════════════ */
+  const handleSaveSupport = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setSupportSaving(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      await setDoc(doc(db, 'settings', 'support'), {
+        ...supportSettings,
+        updatedAt: Timestamp.now(),
+      });
+      setSuccess('Destek bağlantıları başarıyla kaydedildi!');
+    } catch (err: any) {
+      setError('Kaydedilemedi: ' + err.message);
+    } finally {
+      setSupportSaving(false);
+    }
+  };
+
+  const handleAddCustomSupport = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCustomTitle.trim() || !newCustomUrl.trim()) {
+      setError('Lütfen destek seçeneği için başlık ve geçerli bir URL girin.');
+      return;
+    }
+    const newLink: CustomSupportLink = {
+      id: Date.now().toString(),
+      title: newCustomTitle.trim(),
+      url: newCustomUrl.trim(),
+      icon: newCustomIcon,
+      color: newCustomColor,
+      enabled: true,
+    };
+    setSupportSettings(prev => ({
+      ...prev,
+      customLinks: [...(prev.customLinks || []), newLink],
+    }));
+    setNewCustomTitle('');
+    setNewCustomUrl('');
+    setSuccess(`"${newLink.title}" eklendi. Yayına almak için "Ayarları Kaydet" butonuna tıklayın.`);
+  };
+
+  const handleRemoveCustomSupport = (id: string) => {
+    setSupportSettings(prev => ({
+      ...prev,
+      customLinks: prev.customLinks.filter(l => l.id !== id),
+    }));
+  };
+
+  const handleToggleCustomSupport = (id: string) => {
+    setSupportSettings(prev => ({
+      ...prev,
+      customLinks: prev.customLinks.map(l => l.id === id ? { ...l, enabled: !l.enabled } : l),
+    }));
+  };
+
+  /* ════════════════════════════════════════
      RENDER
   ════════════════════════════════════════ */
   return (
@@ -316,6 +381,13 @@ export default function AdminPanel() {
             badge={users.length}
           />
         )}
+        <TabBtn
+          id="tab-support"
+          active={activeTab === 'support'}
+          onClick={() => setActiveTab('support')}
+          icon={<Heart className="w-4 h-4 text-rose-500 fill-rose-500/20" />}
+          label="Destek Bağlantıları"
+        />
       </div>
 
       {/* ══════════════════════════════════
@@ -327,16 +399,6 @@ export default function AdminPanel() {
             <Layers className="w-6 h-6 text-blue-500" />
             <span>{editingCat ? 'Kategoriyi Düzenle' : 'Kategori Yönetimi'}</span>
           </h2>
-
-          {currentUserRole === 'admin' && (
-            <div className="mb-8 rounded-2xl border border-blue-900/40 bg-blue-950/20 p-5">
-              <p className="text-sm text-zinc-300 mb-4">4 ana kategori ve 39 alt başlığı ekleyin. Mevcut başlıklar korunur; tekrar eklemek kopya oluşturmaz.</p>
-              <button type="button" onClick={handleImportCategories} disabled={loading}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-xl disabled:opacity-50">
-                {loading ? 'İşleniyor...' : 'Oyun & Program Kategorilerini Ekle'}
-              </button>
-            </div>
-          )}
 
           <form onSubmit={handleAddCategory} className="space-y-6 mb-10">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -473,12 +535,44 @@ export default function AdminPanel() {
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">
-                        {mediaType === 'youtube' ? 'YouTube Video URL' : 'Resim URL'}
+                      <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 flex items-center justify-between">
+                        <span>{mediaType === 'youtube' ? 'YouTube Video URL' : 'Resim URL'}</span>
+                        {mediaType === 'image' && (
+                          <span className="text-[10px] text-zinc-500 font-normal">
+                            (Doğrudan resim bağlantısı)
+                          </span>
+                        )}
                       </label>
                       <input type="url" required value={mediaUrl} onChange={e => setMediaUrl(e.target.value)}
                         className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
-                        placeholder={mediaType === 'youtube' ? 'https://youtube.com/watch?v=...' : 'https://resim.com/resim.jpg'} />
+                        placeholder={mediaType === 'youtube' ? 'https://youtube.com/watch?v=...' : 'https://i.ibb.co/... veya https://.../resim.jpg'} />
+
+                      {/* Medya Önizleme & Yükleme İpuçları */}
+                      {mediaType === 'image' && mediaUrl && (
+                        <div className="mt-3 p-2 bg-black border border-zinc-800 rounded-xl flex items-center space-x-3">
+                          <img
+                            src={mediaUrl}
+                            alt="Önizleme"
+                            className="w-12 h-12 object-cover rounded-lg border border-zinc-700 bg-zinc-900"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = 'https://placehold.co/100x100/27272a/71717a?text=Hata';
+                            }}
+                          />
+                          <div className="text-xs">
+                            <p className="text-zinc-300 font-medium">Görsel Önizlemesi</p>
+                            <p className="text-[10px] text-zinc-500 truncate max-w-[200px]">{mediaUrl}</p>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {mediaType === 'image' && (
+                        <p className="text-[11px] text-zinc-500 mt-2 leading-relaxed">
+                          💡 Bilgisayarınızdan resim yüklemek için{' '}
+                          <a href="https://imgbb.com" target="_blank" rel="noreferrer" className="text-blue-400 hover:underline">ImgBB</a> veya{' '}
+                          <a href="https://hizliresim.com" target="_blank" rel="noreferrer" className="text-blue-400 hover:underline">Hızlı Resim</a>{' '}
+                          kullanıp doğrudan resim linkini buraya yapıştırabilirsiniz.
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -759,6 +853,403 @@ export default function AdminPanel() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════
+          DESTEK BAĞLANTILARI SEKMESİ
+      ══════════════════════════════════ */}
+      {activeTab === 'support' && (
+        <div className="space-y-8">
+          {/* Header & Bilgilendirme */}
+          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 sm:p-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-6 border-b border-zinc-800">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500">
+                  <Heart className="w-6 h-6 fill-rose-500/20" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-white tracking-tight">Destek Bağlantıları Yönetimi</h2>
+                  <p className="text-sm text-zinc-400 mt-0.5">
+                    Kullanıcıların Patreon, Ko-fi veya özel yöntemlerle projenize destek olabileceği bağlantıları buradan yapılandırabilirsiniz.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleSaveSupport}
+                disabled={supportSaving}
+                className="inline-flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold px-6 py-3 rounded-2xl shadow-lg shadow-blue-600/25 transition-all text-sm flex-shrink-0 cursor-pointer"
+              >
+                {supportSaving ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Kaydediliyor...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4" />
+                    <span>Değişiklikleri Kaydet</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {error && (
+              <div className="mb-6 flex items-center gap-2 bg-red-900/20 border border-red-900/50 text-red-400 px-4 py-3 rounded-xl text-sm">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" /><span>{error}</span>
+              </div>
+            )}
+            {success && (
+              <div className="mb-6 flex items-center gap-2 bg-green-900/20 border border-green-900/50 text-green-400 px-4 py-3 rounded-xl text-sm">
+                <CheckCircle2 className="w-4 h-4 flex-shrink-0" /><span>{success}</span>
+              </div>
+            )}
+
+            {/* Canlı Önizleme Kutusu */}
+            <div className="bg-black/60 border border-zinc-800 rounded-2xl p-5 mb-8">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                    Sitede Görünüm Önizlemesi (Giriş Panelinin Altındaki Alan)
+                  </span>
+                </div>
+                <span className="text-[11px] text-zinc-500">Canlı Önizleme</span>
+              </div>
+              <div className="p-4 bg-zinc-950 border border-dashed border-zinc-800 rounded-xl flex flex-wrap items-center justify-between gap-4">
+                <div className="text-sm font-bold text-white uppercase tracking-tight flex items-center space-x-2">
+                  <span className="text-zinc-500 text-xs font-normal">Sayfa konumu:</span>
+                  <span>ÖNE ÇIKANLAR</span>
+                </div>
+                {/* Simüle edilen butonlar */}
+                <div className="flex items-center gap-2">
+                  {supportSettings.patreonEnabled && supportSettings.patreonUrl && (
+                    <div className="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-zinc-950 border border-[#FF424D]/50 text-white text-xs font-semibold shadow-sm">
+                      <span className="w-5 h-5 rounded-md bg-[#FF424D] text-white flex items-center justify-center p-0.5">
+                        <PatreonIcon className="w-3.5 h-3.5 fill-white" />
+                      </span>
+                      <span>{supportSettings.patreonLabel || 'Patreon'}</span>
+                      <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-[#FF424D]/20 text-[#FF424D] border border-[#FF424D]/30">
+                        Destek
+                      </span>
+                    </div>
+                  )}
+                  {supportSettings.kofiEnabled && supportSettings.kofiUrl && (
+                    <div className="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-zinc-950 border border-[#13C3FF]/50 text-white text-xs font-semibold shadow-sm">
+                      <span className="w-5 h-5 rounded-md bg-[#13C3FF] text-white flex items-center justify-center p-0.5">
+                        <KofiIcon className="w-3.5 h-3.5 fill-white" />
+                      </span>
+                      <span>{supportSettings.kofiLabel || 'Ko-fi'}</span>
+                    </div>
+                  )}
+                  {supportSettings.customLinks?.filter(l => l.enabled).map(l => (
+                    <div key={l.id} className="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs font-semibold shadow-sm">
+                      <span className="w-5 h-5 rounded-md flex items-center justify-center p-0.5 text-white" style={{ backgroundColor: l.color || '#3b82f6' }}>
+                        <SupportIconRenderer icon={l.icon} className="w-3.5 h-3.5 text-white" />
+                      </span>
+                      <span>{l.title}</span>
+                    </div>
+                  ))}
+                  {!supportSettings.patreonEnabled && !supportSettings.kofiEnabled && (!supportSettings.customLinks || supportSettings.customLinks.filter(l => l.enabled).length === 0) && (
+                    <span className="text-xs text-zinc-500 italic">Hiçbir destek bağlantısı aktif değil. Butonlar sitede gizlenecektir.</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* ── 1. PATREON AYARLARI ── */}
+            <div className="space-y-6">
+              <div className="p-6 bg-black border border-zinc-800 rounded-2xl relative overflow-hidden">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#FF424D]/20 border border-[#FF424D]/30 flex items-center justify-center text-[#FF424D]">
+                      <PatreonIcon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-white flex items-center space-x-2">
+                        <span>Patreon Bağlantısı</span>
+                        <span className="text-[10px] bg-[#FF424D]/20 text-[#FF424D] px-2 py-0.5 rounded-full font-bold border border-[#FF424D]/30">
+                          Önerilen
+                        </span>
+                      </h3>
+                      <p className="text-xs text-zinc-500">Patreon sayfanızı bağlayarak abonelik veya bağış alın.</p>
+                    </div>
+                  </div>
+                  <label className="flex items-center space-x-3 cursor-pointer select-none">
+                    <span className="text-xs font-semibold text-zinc-400">
+                      {supportSettings.patreonEnabled ? 'Aktif' : 'Kapalı'}
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={supportSettings.patreonEnabled}
+                      onChange={e => setSupportSettings({ ...supportSettings, patreonEnabled: e.target.checked })}
+                      className="sr-only"
+                    />
+                    <div className={cn(
+                      "w-11 h-6 rounded-full transition-colors relative flex items-center px-0.5",
+                      supportSettings.patreonEnabled ? "bg-[#FF424D]" : "bg-zinc-800"
+                    )}>
+                      <div className={cn(
+                        "w-5 h-5 rounded-full bg-white transition-transform",
+                        supportSettings.patreonEnabled ? "translate-x-5" : "translate-x-0"
+                      )} />
+                    </div>
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">
+                      Patreon Profil veya Kampanya URL'si
+                    </label>
+                    <input
+                      type="url"
+                      value={supportSettings.patreonUrl}
+                      onChange={e => setSupportSettings({ ...supportSettings, patreonUrl: e.target.value })}
+                      placeholder="https://www.patreon.com/kullanici_adiniz"
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-white text-sm focus:border-[#FF424D] focus:ring-1 focus:ring-[#FF424D] outline-none transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">
+                      Buton Metni
+                    </label>
+                    <input
+                      type="text"
+                      value={supportSettings.patreonLabel || ''}
+                      onChange={e => setSupportSettings({ ...supportSettings, patreonLabel: e.target.value })}
+                      placeholder="Patreon"
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-white text-sm focus:border-[#FF424D] outline-none transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* ── 2. KO-FI AYARLARI ── */}
+              <div className="p-6 bg-black border border-zinc-800 rounded-2xl relative overflow-hidden">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#13C3FF]/20 border border-[#13C3FF]/30 flex items-center justify-center text-[#13C3FF]">
+                      <KofiIcon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-white">Ko-fi Bağlantısı</h3>
+                      <p className="text-xs text-zinc-500">Ko-fi sayfanız üzerinden tek seferlik kahve ısmarlama veya bağış.</p>
+                    </div>
+                  </div>
+                  <label className="flex items-center space-x-3 cursor-pointer select-none">
+                    <span className="text-xs font-semibold text-zinc-400">
+                      {supportSettings.kofiEnabled ? 'Aktif' : 'Kapalı'}
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={supportSettings.kofiEnabled}
+                      onChange={e => setSupportSettings({ ...supportSettings, kofiEnabled: e.target.checked })}
+                      className="sr-only"
+                    />
+                    <div className={cn(
+                      "w-11 h-6 rounded-full transition-colors relative flex items-center px-0.5",
+                      supportSettings.kofiEnabled ? "bg-[#13C3FF]" : "bg-zinc-800"
+                    )}>
+                      <div className={cn(
+                        "w-5 h-5 rounded-full bg-white transition-transform",
+                        supportSettings.kofiEnabled ? "translate-x-5" : "translate-x-0"
+                      )} />
+                    </div>
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">
+                      Ko-fi Profil URL'si
+                    </label>
+                    <input
+                      type="url"
+                      value={supportSettings.kofiUrl}
+                      onChange={e => setSupportSettings({ ...supportSettings, kofiUrl: e.target.value })}
+                      placeholder="https://ko-fi.com/kullanici_adiniz"
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-white text-sm focus:border-[#13C3FF] focus:ring-1 focus:ring-[#13C3FF] outline-none transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">
+                      Buton Metni
+                    </label>
+                    <input
+                      type="text"
+                      value={supportSettings.kofiLabel || ''}
+                      onChange={e => setSupportSettings({ ...supportSettings, kofiLabel: e.target.value })}
+                      placeholder="Ko-fi"
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-white text-sm focus:border-[#13C3FF] outline-none transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* ── 3. ÖZEL DESTEK BAĞLANTILARI (Buy Me a Coffee, BynoGame, Papara vb.) ── */}
+              <div className="p-6 bg-black border border-zinc-800 rounded-2xl">
+                <div className="mb-6">
+                  <h3 className="text-lg font-bold text-white flex items-center space-x-2">
+                    <Gift className="w-5 h-5 text-purple-400" />
+                    <span>Özel Destek & Bağış Seçenekleri</span>
+                  </h3>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    Buy Me a Coffee, BynoGame, Papara, Kreosus, Kripto cüzdan veya Discord sunucusu gibi dilediğiniz özel destek seçeneklerini ekleyin.
+                  </p>
+                </div>
+
+                {/* Yeni ekleme formu */}
+                <form onSubmit={handleAddCustomSupport} className="bg-zinc-950 border border-zinc-800 rounded-xl p-4 mb-6">
+                  <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">Yeni Destek Seçeneği Ekle</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+                    <div>
+                      <label className="block text-[11px] font-bold text-zinc-500 uppercase mb-1">Platform / Başlık</label>
+                      <input
+                        type="text"
+                        required
+                        value={newCustomTitle}
+                        onChange={e => setNewCustomTitle(e.target.value)}
+                        placeholder="Örn: Buy Me a Coffee"
+                        className="w-full bg-black border border-zinc-800 rounded-lg px-3 py-2 text-white text-xs focus:border-blue-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-zinc-500 uppercase mb-1">Bağlantı URL'si</label>
+                      <input
+                        type="url"
+                        required
+                        value={newCustomUrl}
+                        onChange={e => setNewCustomUrl(e.target.value)}
+                        placeholder="https://buymeacoffee.com/..."
+                        className="w-full bg-black border border-zinc-800 rounded-lg px-3 py-2 text-white text-xs focus:border-blue-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-zinc-500 uppercase mb-1">İkon</label>
+                      <select
+                        value={newCustomIcon}
+                        onChange={e => setNewCustomIcon(e.target.value as SupportIconType)}
+                        className="w-full bg-black border border-zinc-800 rounded-lg px-3 py-2 text-white text-xs focus:border-blue-500 outline-none cursor-pointer"
+                      >
+                        <option value="heart">Kalp</option>
+                        <option value="coffee">Kahve (Buy Me a Coffee)</option>
+                        <option value="gift">Hediye Kutusu</option>
+                        <option value="dollar">Para / Dolar</option>
+                        <option value="kofi">Ko-fi</option>
+                        <option value="patreon">Patreon</option>
+                        <option value="link">Dış Bağlantı</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-zinc-500 uppercase mb-1">Vurgu Rengi</label>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="color"
+                          value={newCustomColor}
+                          onChange={e => setNewCustomColor(e.target.value)}
+                          className="w-9 h-8 bg-transparent cursor-pointer rounded border border-zinc-800"
+                        />
+                        <button
+                          type="submit"
+                          className="flex-grow bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-3 rounded-lg text-xs transition-colors cursor-pointer"
+                        >
+                          + Ekle
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+
+                {/* Eklenen özel bağlantılar listesi */}
+                <div className="space-y-2">
+                  {(!supportSettings.customLinks || supportSettings.customLinks.length === 0) ? (
+                    <div className="text-center py-6 border border-dashed border-zinc-800 rounded-xl text-zinc-500 text-xs">
+                      Henüz özel bir destek bağlantısı eklenmedi.
+                    </div>
+                  ) : (
+                    supportSettings.customLinks.map(link => (
+                      <div
+                        key={link.id}
+                        className="flex items-center justify-between p-3 bg-zinc-950 border border-zinc-800 rounded-xl"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <span
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-white"
+                            style={{ backgroundColor: link.color || '#3b82f6' }}
+                          >
+                            <SupportIconRenderer icon={link.icon} className="w-4 h-4 text-white" />
+                          </span>
+                          <div>
+                            <p className="text-sm font-semibold text-white flex items-center space-x-2">
+                              <span>{link.title}</span>
+                              {!link.enabled && (
+                                <span className="text-[10px] bg-zinc-800 text-zinc-500 px-1.5 py-0.5 rounded">Pasif</span>
+                              )}
+                            </p>
+                            <a
+                              href={link.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-[11px] text-zinc-500 hover:text-blue-400 truncate max-w-xs block"
+                            >
+                              {link.url}
+                            </a>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => handleToggleCustomSupport(link.id)}
+                            className={cn(
+                              "text-xs px-2.5 py-1 rounded-lg font-medium transition-colors cursor-pointer",
+                              link.enabled
+                                ? "bg-green-900/30 text-green-400 border border-green-800/50"
+                                : "bg-zinc-800 text-zinc-500"
+                            )}
+                          >
+                            {link.enabled ? 'Aktif' : 'Pasif'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveCustomSupport(link.id)}
+                            className="p-1.5 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer"
+                            title="Sil"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Alt Kaydet Butonu */}
+              <div className="flex justify-end pt-4">
+                <button
+                  type="button"
+                  onClick={handleSaveSupport}
+                  disabled={supportSaving}
+                  className="inline-flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold px-8 py-3.5 rounded-2xl shadow-xl shadow-blue-600/30 transition-all text-sm cursor-pointer"
+                >
+                  {supportSaving ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Kaydediliyor...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4" />
+                      <span>Tüm Değişiklikleri Kaydet</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
