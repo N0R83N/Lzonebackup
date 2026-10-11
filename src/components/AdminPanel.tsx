@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebase';
 import {
   collection, addDoc, query, orderBy, onSnapshot,
-  deleteDoc, doc, Timestamp, updateDoc, getDoc,
+  deleteDoc, doc, Timestamp, updateDoc, getDoc, getDocs, runTransaction, arrayUnion,
 } from 'firebase/firestore';
 import { Software, MediaType, Category, UserRole, UserProfile } from '../types';
 import {
@@ -11,6 +11,7 @@ import {
   Edit2, X as CloseIcon, Users, Shield, Crown, Search, UserCheck,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { DEFAULT_CATEGORIES } from '../lib/categories';
 
 type ActiveTab = 'content' | 'categories' | 'users';
 
@@ -105,6 +106,30 @@ export default function AdminPanel() {
   /* ════════════════════════════════════════
      KATEGORİ HANDLER'LARI
   ════════════════════════════════════════ */
+  const handleImportCategories = async () => {
+    setLoading(true); setError(null); setSuccess(null);
+    try {
+      const existing = await getDocs(collection(db, 'categories'));
+      const nextOrder = Math.max(-1, ...existing.docs.map(d => Number(d.data().order) || 0)) + 1;
+      const targets = DEFAULT_CATEGORIES.map((preset, index) => {
+        const match = existing.docs.find(d => d.data().name.trim().toLocaleLowerCase('tr') === preset.name.toLocaleLowerCase('tr'));
+        return { preset, ref: match?.ref ?? doc(db, 'categories', preset.id), order: nextOrder + index };
+      });
+      await runTransaction(db, async transaction => {
+        const snapshots = await Promise.all(targets.map(target => transaction.get(target.ref)));
+        targets.forEach(({ preset, ref, order }, index) => {
+          if (snapshots[index].exists()) {
+            transaction.update(ref, { subcategories: arrayUnion(...preset.subcategories) });
+          } else {
+            transaction.set(ref, { name: preset.name, subcategories: preset.subcategories, order });
+          }
+        });
+      });
+      setSuccess('Oyun, yazılım, işletim sistemi ve mobil kategorileri eklendi. Mevcut başlıklar korundu.');
+    } catch (err: any) { setError('Kategoriler eklenemedi: ' + err.message); }
+    finally { setLoading(false); }
+  };
+
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCatName) return;
@@ -302,6 +327,16 @@ export default function AdminPanel() {
             <Layers className="w-6 h-6 text-blue-500" />
             <span>{editingCat ? 'Kategoriyi Düzenle' : 'Kategori Yönetimi'}</span>
           </h2>
+
+          {currentUserRole === 'admin' && (
+            <div className="mb-8 rounded-2xl border border-blue-900/40 bg-blue-950/20 p-5">
+              <p className="text-sm text-zinc-300 mb-4">4 ana kategori ve 39 alt başlığı ekleyin. Mevcut başlıklar korunur; tekrar eklemek kopya oluşturmaz.</p>
+              <button type="button" onClick={handleImportCategories} disabled={loading}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-xl disabled:opacity-50">
+                {loading ? 'İşleniyor...' : 'Oyun & Program Kategorilerini Ekle'}
+              </button>
+            </div>
+          )}
 
           <form onSubmit={handleAddCategory} className="space-y-6 mb-10">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
