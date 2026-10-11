@@ -72,6 +72,49 @@
         "customLinks": { "type": "array", "description": "Özel destek bağlantıları listesi" },
         "heading": { "type": "string", "description": "Destek başlığı" }
       }
+    },
+    "visitor_sessions": {
+      "title": "Visitor Sessions",
+      "description": "Canlı ve aktif ziyaretçi oturumları.",
+      "type": "object",
+      "properties": {
+        "sessionId": { "type": "string" },
+        "visitorId": { "type": "string" },
+        "isBot": { "type": "boolean" },
+        "botName": { "type": "string" },
+        "isMember": { "type": "boolean" },
+        "userId": { "type": "string" },
+        "userNickname": { "type": "string" },
+        "userRole": { "type": "string" },
+        "path": { "type": "string" },
+        "referrer": { "type": "string" },
+        "device": { "type": "string" },
+        "browser": { "type": "string" },
+        "os": { "type": "string" },
+        "lastActive": { "type": "string", "format": "date-time" },
+        "startedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "visitor_logs": {
+      "title": "Visitor Logs",
+      "description": "Ziyaretçi ve arama motoru botu trafik logları.",
+      "type": "object",
+      "properties": {
+        "visitorId": { "type": "string" },
+        "sessionId": { "type": "string" },
+        "isBot": { "type": "boolean" },
+        "botName": { "type": "string" },
+        "isMember": { "type": "boolean" },
+        "userId": { "type": "string" },
+        "userNickname": { "type": "string" },
+        "path": { "type": "string" },
+        "referrer": { "type": "string" },
+        "device": { "type": "string" },
+        "browser": { "type": "string" },
+        "os": { "type": "string" },
+        "userAgent": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
     }
   },
   "firestore": {
@@ -94,6 +137,14 @@
     "/settings/{settingId}": {
       "schema": "settings",
       "description": "Genel ayarlar ve destek bağlantıları."
+    },
+    "/visitor_sessions/{sessionId}": {
+      "schema": "visitor_sessions",
+      "description": "Canlı aktif ziyaretçiler oturum verileri."
+    },
+    "/visitor_logs/{logId}": {
+      "schema": "visitor_logs",
+      "description": "Ziyaretçi ve robot aktivite logları."
     }
   }
 }

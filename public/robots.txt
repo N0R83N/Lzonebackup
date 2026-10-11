@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /profile
+Disallow: /auth
+
+Sitemap: https://l9zone.pages.dev/sitemap.xml

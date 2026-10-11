@@ -9,13 +9,15 @@ import {
   Plus, Trash2, Video, Image as ImageIcon, AlertCircle, CheckCircle2,
   Layers, Bold, Italic, Heading1, Heading2, List, Link2, Quote, Info,
   Edit2, X as CloseIcon, Users, Shield, Crown, Search, UserCheck,
-  Heart, Gift, Coffee, DollarSign, ExternalLink, Link as LinkIcon, Sparkles, Check, Globe,
+  Heart, Gift, Coffee, DollarSign, ExternalLink, Link as LinkIcon, Sparkles, Check, Globe, Activity,
 } from 'lucide-react';
 import { PatreonIcon, KofiIcon, SupportIconRenderer } from './SupportIcons';
 import { DEFAULT_SUPPORT_SETTINGS } from './SupportLinksBar';
+import { DEFAULT_CATEGORIES } from '../lib/categories';
 import { cn } from '../lib/utils';
+import VisitorAnalytics from './VisitorAnalytics';
 
-type ActiveTab = 'content' | 'categories' | 'users' | 'support';
+type ActiveTab = 'content' | 'categories' | 'users' | 'support' | 'analytics';
 
 /* ─── Rol badge renkleri ─── */
 const roleMeta: Record<UserRole, { label: string; color: string; icon: React.ReactNode }> = {
@@ -174,6 +176,34 @@ export default function AdminPanel() {
       await deleteDoc(doc(db, 'categories', id));
       setDeletingCategoryId(null); setSuccess('Kategori silindi!');
     } catch (err: any) { setError('Silme hatası: ' + err.message); }
+  };
+
+  const handleImportDefaultCategories = async () => {
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      for (const defCat of DEFAULT_CATEGORIES) {
+        const existing = categories.find(c => c.name.toLowerCase() === defCat.name.toLowerCase());
+        if (existing) {
+          const merged = Array.from(new Set([...existing.subcategories, ...defCat.subcategories]));
+          await updateDoc(doc(db, 'categories', existing.id), {
+            subcategories: merged,
+          });
+        } else {
+          await addDoc(collection(db, 'categories'), {
+            name: defCat.name,
+            subcategories: defCat.subcategories,
+            order: defCat.order,
+          });
+        }
+      }
+      setSuccess(`Oyun ve Program kategorileri başarıyla yüklendi! (${DEFAULT_CATEGORIES.length} ana kategori, 39 alt başlık senkronize edildi)`);
+    } catch (err: any) {
+      setError('Kategoriler yüklenirken hata: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   /* ════════════════════════════════════════
@@ -388,6 +418,13 @@ export default function AdminPanel() {
           icon={<Heart className="w-4 h-4 text-rose-500 fill-rose-500/20" />}
           label="Destek Bağlantıları"
         />
+        <TabBtn
+          id="tab-analytics"
+          active={activeTab === 'analytics'}
+          onClick={() => setActiveTab('analytics')}
+          icon={<Activity className="w-4 h-4 text-emerald-400" />}
+          label="Ziyaretçi & Bot Radarı"
+        />
       </div>
 
       {/* ══════════════════════════════════
@@ -395,10 +432,21 @@ export default function AdminPanel() {
       ══════════════════════════════════ */}
       {activeTab === 'categories' && (
         <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
-          <h2 className="text-2xl font-bold text-white mb-8 flex items-center space-x-3">
-            <Layers className="w-6 h-6 text-blue-500" />
-            <span>{editingCat ? 'Kategoriyi Düzenle' : 'Kategori Yönetimi'}</span>
-          </h2>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-4 border-b border-zinc-800/80">
+            <h2 className="text-2xl font-bold text-white flex items-center space-x-3">
+              <Layers className="w-6 h-6 text-blue-500" />
+              <span>{editingCat ? 'Kategoriyi Düzenle' : 'Kategori Yönetimi'}</span>
+            </h2>
+            <button
+              type="button"
+              onClick={handleImportDefaultCategories}
+              disabled={loading}
+              className="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 text-white font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-blue-900/30 text-xs transition-all cursor-pointer"
+            >
+              <Sparkles className="w-4 h-4 text-amber-300" />
+              <span>Oyun & Program Kategorilerini Ekle (4 Ana / 39 Alt Kategori)</span>
+            </button>
+          </div>
 
           <form onSubmit={handleAddCategory} className="space-y-6 mb-10">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1252,6 +1300,13 @@ export default function AdminPanel() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ══════════════════════════════════
+          ZİYARETÇİ & BOT RADARI SEKMESİ
+      ══════════════════════════════════ */}
+      {activeTab === 'analytics' && (
+        <VisitorAnalytics />
       )}
     </div>
   );

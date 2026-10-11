@@ -86,6 +86,52 @@ export default function SoftwareDetail() {
     }
   }, [id]);
 
+  /* ─── Dinamik SEO ve Schema.org JSON-LD Güncellemesi ─── */
+  useEffect(() => {
+    if (!software) return;
+    const previousTitle = document.title;
+    document.title = `${software.title} İndir – L9Zone`;
+
+    const metaDesc = document.querySelector('meta[name="description"]');
+    const prevDesc = metaDesc?.getAttribute('content') || '';
+    const cleanDesc = software.description.replace(/[#*`_\[\]]/g, '').slice(0, 150).trim();
+    if (metaDesc) {
+      metaDesc.setAttribute('content', `${software.title} hakkında detaylar ve indirme bağlantıları. ${cleanDesc}... L9Zone'da keşfedin.`);
+    }
+
+    const scriptId = 'software-json-ld';
+    let scriptTag = document.getElementById(scriptId) as HTMLScriptElement | null;
+    if (!scriptTag) {
+      scriptTag = document.createElement('script');
+      scriptTag.id = scriptId;
+      scriptTag.type = 'application/ld+json';
+      document.head.appendChild(scriptTag);
+    }
+    scriptTag.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: software.title,
+      description: cleanDesc,
+      applicationCategory: software.category || 'SoftwareApplication',
+      operatingSystem: 'Windows, macOS, Linux, Android',
+      softwareVersion: software.version || 'Son Sürüm',
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'TRY',
+      },
+    });
+
+    return () => {
+      document.title = previousTitle;
+      if (metaDesc && prevDesc) {
+        metaDesc.setAttribute('content', prevDesc);
+      }
+      const existingScript = document.getElementById(scriptId);
+      if (existingScript) existingScript.remove();
+    };
+  }, [software]);
+
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!id || !nickname || !commentContent || submitting) return;

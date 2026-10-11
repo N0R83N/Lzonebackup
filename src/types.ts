@@ -68,3 +68,44 @@ export interface SupportSettings {
   heading?: string;
   showOnHome?: boolean;
 }
+
+export interface VisitorSession {
+  id?: string;
+  sessionId: string;
+  visitorId: string;
+  isBot: boolean;
+  botName?: string | null;
+  isMember: boolean;
+  userId?: string | null;
+  userNickname?: string | null;
+  userRole?: UserRole | null;
+  path: string;
+  referrer: string;
+  device: string;
+  browser: string;
+  os: string;
+  screen?: string;
+  language?: string;
+  pageViews: number;
+  startedAt: any;
+  lastActive: any;
+}
+
+export interface VisitorLog {
+  id?: string;
+  visitorId: string;
+  sessionId: string;
+  isBot: boolean;
+  botName?: string | null;
+  isMember: boolean;
+  userId?: string | null;
+  userNickname?: string | null;
+  path: string;
+  referrer: string;
+  device: string;
+  browser: string;
+  os: string;
+  userAgent: string;
+  timestamp: any;
+}
+

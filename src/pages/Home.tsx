@@ -50,6 +50,18 @@ export default function Home() {
     return unsubscribe;
   }, [categoryFilter, subcategoryFilter, searchQuery]);
 
+  // Dinamik SEO Başlık ve Açıklaması
+  useEffect(() => {
+    if (searchQuery) {
+      document.title = `"${searchQuery}" Sonuçları – L9Zone`;
+    } else if (categoryFilter) {
+      const sub = subcategoryFilter ? ` / ${subcategoryFilter}` : '';
+      document.title = `${categoryFilter}${sub} İndir – L9Zone Güncel Oyun ve Programlar`;
+    } else {
+      document.title = 'L9Zone – Güncel Oyunlar, Programlar ve İndirme Platformu';
+    }
+  }, [categoryFilter, subcategoryFilter, searchQuery]);
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Hero Section - Spotlight Bar */}

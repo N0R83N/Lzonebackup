@@ -165,5 +165,17 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isStaff();
     }
+
+    match /visitor_sessions/{sessionId} {
+      allow read: if isStaff();
+      allow create, update: if true;
+      allow delete: if isStaff();
+    }
+
+    match /visitor_logs/{logId} {
+      allow read: if isStaff();
+      allow create: if true;
+      allow delete: if isStaff();
+    }
   }
 }

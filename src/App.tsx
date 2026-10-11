@@ -10,8 +10,16 @@ import Auth from './components/Auth';
 import AdminPanel from './components/AdminPanel';
 import Profile from './pages/Profile';
 
+import { useVisitorTracking } from './hooks/useVisitorTracking';
+
+function AppTracker({ user, userProfile }: { user: any; userProfile: any }) {
+  useVisitorTracking({ user, userProfile });
+  return null;
+}
+
 export default function App() {
   const [user, setUser] = useState(auth.currentUser);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [isStaff, setIsStaff] = useState(false); // admin veya moderatör
   const [loading, setLoading] = useState(true);
 
@@ -20,7 +28,9 @@ export default function App() {
       setUser(firebaseUser);
       if (firebaseUser) {
         const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-        const role = userDoc.exists() ? userDoc.data().role : null;
+        const data = userDoc.exists() ? userDoc.data() : null;
+        setUserProfile(data);
+        const role = data ? data.role : null;
         if (
           role === 'admin' ||
           role === 'moderator' ||
@@ -31,6 +41,7 @@ export default function App() {
           setIsStaff(false);
         }
       } else {
+        setUserProfile(null);
         setIsStaff(false);
       }
       setLoading(false);
@@ -48,6 +59,7 @@ export default function App() {
 
   return (
     <Router>
+      <AppTracker user={user} userProfile={userProfile} />
       <div className="min-h-screen bg-black selection:bg-blue-500/30 selection:text-blue-200">
         <Navbar />
         <Routes>
