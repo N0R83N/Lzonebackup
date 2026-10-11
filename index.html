@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>L9zone</title>
+    <script>
+      // Fix for "Cannot set property fetch of #<Window>"
+      // This happens when some libraries try to polyfill fetch in restricted environments
+      try {
+        const originalFetch = window.fetch;
+        if (originalFetch) {
+          Object.defineProperty(window, 'fetch', {
+            get: () => originalFetch,
+            set: (v) => { console.warn('Blocked attempt to override fetch'); },
+            configurable: true
+          });
+        }
+      } catch (e) {
+        // If it's already a getter, we can't redefine it easily, but that's fine
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

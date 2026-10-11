@@ -1,0 +1,110 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: software
+    // Document ID: auto-generated
+    // Fields:
+    //   - title: string (required, 1-100 chars)
+    //   - description: string (required, 1-10000 chars)
+    //   - mediaUrl: string (required, valid URL)
+    //   - mediaType: string (required, 'image' or 'youtube')
+    //   - createdAt: timestamp (required)
+    //   - authorUid: string (required, matches admin UID)
+    //
+    // Collection: users
+    // Document ID: user UID
+    // Fields:
+    //   - nickname: string (required, 1-50 chars)
+    //   - email: string (optional, valid email)
+    //   - role: string (required, 'admin' or 'user')
+    //
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (
+          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
+          request.auth.token.email == "nijatemiraslanov@gmail.com"
+        );
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidSoftware(data) {
+      return data.title is string && data.title.size() > 0 && data.title.size() <= 100 &&
+             data.description is string && data.description.size() > 0 && data.description.size() <= 10000 &&
+             data.mediaUrl is string && data.mediaUrl.size() > 0 &&
+             data.mediaType in ['image', 'youtube'] &&
+             (!('isFeatured' in data) || data.isFeatured is bool) &&
+             (!('version' in data) || data.version == null || (data.version is string && data.version.size() <= 20)) &&
+             (!('category' in data) || data.category == null || (data.category is string && data.category.size() <= 50)) &&
+             (!('subcategory' in data) || data.subcategory == null || (data.subcategory is string && data.subcategory.size() <= 50)) &&
+             (!('downloadUrl' in data) || data.downloadUrl == null || (data.downloadUrl is string)) &&
+             (!('downloadUrl2' in data) || data.downloadUrl2 == null || (data.downloadUrl2 is string)) &&
+             (!('tags' in data) || data.tags == null || (data.tags is list)) &&
+             (!('isPremium' in data) || data.isPremium is bool) &&
+             (!('specialNote' in data) || data.specialNote == null || (data.specialNote is string && data.specialNote.size() <= 1000)) &&
+             data.createdAt is timestamp &&
+             data.authorUid == request.auth.uid;
+    }
+
+    function isValidCategory(data) {
+      return data.name is string && data.name.size() > 0 &&
+             data.subcategories is list &&
+             data.order is number;
+    }
+
+    function isValidComment(data) {
+      return data.nickname is string && data.nickname.size() > 0 && data.nickname.size() <= 30 &&
+             data.content is string && data.content.size() > 0 && data.content.size() <= 500 &&
+             data.createdAt is timestamp &&
+             (!('parentId' in data) || data.parentId == null || data.parentId is string);
+    }
+
+    function isValidUser(data) {
+      return data.nickname is string && data.nickname.size() > 0 && data.nickname.size() <= 50 &&
+             (!('email' in data) || (data.email is string && data.email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"))) &&
+             data.role in ['admin', 'user'];
+    }
+
+    // Rules
+    match /software/{softwareId} {
+      allow read: if true; // Publicly readable
+      allow create: if isAdmin() && isValidSoftware(request.resource.data);
+      allow update: if isAdmin() && isValidSoftware(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isAdmin());
+      allow delete: if false;
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidCategory(request.resource.data);
+      allow update: if isAdmin() && isValidCategory(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /software/{softwareId}/comments/{commentId} {
+      allow read: if true;
+      allow create: if isValidComment(request.resource.data);
+      allow delete: if isAdmin() || (request.time < resource.data.createdAt + duration.value(30, 'm'));
+    }
+  }
+}

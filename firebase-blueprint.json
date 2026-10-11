@@ -1,0 +1,79 @@
+{
+  "entities": {
+    "software": {
+      "title": "Software",
+      "description": "Tanıtılan yazılım programları.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Yazılım başlığı" },
+        "description": { "type": "string", "description": "Yazılım açıklaması (Markdown)" },
+        "mediaUrl": { "type": "string", "description": "Resim veya YouTube video URL'si" },
+        "mediaType": { "type": "string", "enum": ["image", "youtube"], "description": "Medya türü" },
+        "isFeatured": { "type": "boolean", "description": "Öne çıkarılan içerik mi?" },
+        "version": { "type": "string", "description": "Yazılım versiyonu" },
+        "category": { "type": "string", "description": "Ana Kategori" },
+        "subcategory": { "type": "string", "description": "Alt Kategori" },
+        "downloadUrl": { "type": "string", "description": "İndirme bağlantısı" },
+        "downloadUrl2": { "type": "string", "description": "Alternatif indirme bağlantısı" },
+        "tags": { "type": "array", "items": { "type": "string" }, "description": "Etiketler" },
+        "isPremium": { "type": "boolean", "description": "Ücretli/Premium mu?" },
+        "specialNote": { "type": "string", "description": "Admin özel notu" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Oluşturulma tarihi" },
+        "authorUid": { "type": "string", "description": "Paylaşan adminin UID'si" }
+      },
+      "required": ["title", "description", "mediaUrl", "mediaType", "createdAt", "authorUid"]
+    },
+    "users": {
+      "title": "User",
+      "description": "Kullanıcı profilleri.",
+      "type": "object",
+      "properties": {
+        "nickname": { "type": "string", "description": "Kullanıcı adı" },
+        "email": { "type": "string", "description": "E-posta (opsiyonel)" },
+        "role": { "type": "string", "enum": ["admin", "user"], "description": "Kullanıcı rolü" }
+      },
+      "required": ["nickname", "role"]
+    },
+    "categories": {
+      "title": "Category",
+      "description": "Navigasyon kategorileri.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Kategori adı" },
+        "subcategories": { "type": "array", "items": { "type": "string" }, "description": "Alt kategoriler" },
+        "order": { "type": "number", "description": "Sıralama düzeni" }
+      },
+      "required": ["name", "subcategories", "order"]
+    },
+    "comments": {
+      "title": "Comment",
+      "description": "İçeriklere yapılan anonim yorumlar ve yanıtlar.",
+      "type": "object",
+      "properties": {
+        "nickname": { "type": "string", "description": "Yorum yapanın takma adı" },
+        "content": { "type": "string", "description": "Yorum içeriği" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Yorum tarihi" },
+        "parentId": { "type": "string", "description": "Yanıtlanan yorumun ID'si (opsiyonel)" }
+      },
+      "required": ["nickname", "content", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/software/{softwareId}": {
+      "schema": "software",
+      "description": "Yazılım tanıtımları koleksiyonu."
+    },
+    "/users/{userId}": {
+      "schema": "users",
+      "description": "Kullanıcı bilgileri koleksiyonu."
+    },
+    "/categories/{categoryId}": {
+      "schema": "categories",
+      "description": "Navigasyon kategorileri koleksiyonu."
+    },
+    "/software/{softwareId}/comments/{commentId}": {
+      "schema": "comments",
+      "description": "İçeriklere yapılan yorumlar."
+    }
+  }
+}
