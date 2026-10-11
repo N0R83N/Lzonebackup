@@ -175,7 +175,7 @@ export default function Home() {
           </div>
           <p className="text-zinc-600 text-sm">
             © 2026 L9Zone. Tüm hakları saklıdır. <br />
-            Tasarlayan: <a href="https://github.com/N0R83N" target="_blank" rel="noopener noreferrer" className="text-blue-500/50 hover:text-blue-500 transition-colors">N0R83N</a>
+            Bu site Nijat tarafından yapıldı. (<a href="https://github.com/N0R83N" target="_blank" rel="noopener noreferrer" className="text-blue-500/50 hover:text-blue-500 transition-colors">Noren</a>)
           </p>
         </div>
       </footer>
