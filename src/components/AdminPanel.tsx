@@ -9,15 +9,16 @@ import {
   Plus, Trash2, Video, Image as ImageIcon, AlertCircle, CheckCircle2,
   Layers, Bold, Italic, Heading1, Heading2, List, Link2, Quote, Info,
   Edit2, X as CloseIcon, Users, Shield, Crown, Search, UserCheck,
-  Heart, Gift, Coffee, DollarSign, ExternalLink, Link as LinkIcon, Sparkles, Check, Globe, Activity,
+  Heart, Gift, Coffee, DollarSign, ExternalLink, Link as LinkIcon, Sparkles, Check, Globe, Activity, FileCode,
 } from 'lucide-react';
 import { PatreonIcon, KofiIcon, SupportIconRenderer } from './SupportIcons';
 import { DEFAULT_SUPPORT_SETTINGS } from './SupportLinksBar';
 import { DEFAULT_CATEGORIES } from '../lib/categories';
 import { cn } from '../lib/utils';
 import VisitorAnalytics from './VisitorAnalytics';
+import SitemapManager from './SitemapManager';
 
-type ActiveTab = 'content' | 'categories' | 'users' | 'support' | 'analytics';
+type ActiveTab = 'content' | 'categories' | 'users' | 'support' | 'analytics' | 'sitemap';
 
 /* ─── Rol badge renkleri ─── */
 const roleMeta: Record<UserRole, { label: string; color: string; icon: React.ReactNode }> = {
@@ -424,6 +425,13 @@ export default function AdminPanel() {
           onClick={() => setActiveTab('analytics')}
           icon={<Activity className="w-4 h-4 text-emerald-400" />}
           label="Ziyaretçi & Bot Radarı"
+        />
+        <TabBtn
+          id="tab-sitemap"
+          active={activeTab === 'sitemap'}
+          onClick={() => setActiveTab('sitemap')}
+          icon={<FileCode className="w-4 h-4 text-amber-400" />}
+          label="Site Haritası"
         />
       </div>
 
@@ -1307,6 +1315,13 @@ export default function AdminPanel() {
       ══════════════════════════════════ */}
       {activeTab === 'analytics' && (
         <VisitorAnalytics />
+      )}
+
+      {/* ══════════════════════════════════
+          SİTE HARİTASI (SITEMAP.XML) SEKMESİ
+      ══════════════════════════════════ */}
+      {activeTab === 'sitemap' && (
+        <SitemapManager softwares={softwares} categories={categories} />
       )}
     </div>
   );
