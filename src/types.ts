@@ -43,6 +43,8 @@ export interface UserProfile {
   nickname: string;
   email?: string;
   role: UserRole;
+  onboardingComplete?: boolean;
+  preferredCategories?: string[];
   createdAt?: any;
 }
 
@@ -108,4 +110,3 @@ export interface VisitorLog {
   userAgent: string;
   timestamp: any;
 }
-
