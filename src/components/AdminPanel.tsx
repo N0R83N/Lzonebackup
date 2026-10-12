@@ -11,7 +11,7 @@ import {
   Edit2, X as CloseIcon, Users, Shield, Crown, Search, UserCheck,
   Heart, Gift, Coffee, DollarSign, ExternalLink, Link as LinkIcon, Sparkles, Check, Globe, Activity, FileCode,
 } from 'lucide-react';
-import { PatreonIcon, KofiIcon, SupportIconRenderer } from './SupportIcons';
+import { PatreonIcon, KofiIcon, SupportIconRenderer, PLATFORM_PRESETS, PlatformPreset } from './SupportIcons';
 import { DEFAULT_SUPPORT_SETTINGS } from './SupportLinksBar';
 import { DEFAULT_CATEGORIES } from '../lib/categories';
 import { cn } from '../lib/utils';
@@ -113,8 +113,9 @@ export default function AdminPanel() {
   const [supportSaving, setSupportSaving] = useState(false);
   const [newCustomTitle, setNewCustomTitle] = useState('');
   const [newCustomUrl, setNewCustomUrl] = useState('');
-  const [newCustomIcon, setNewCustomIcon] = useState<SupportIconType>('heart');
-  const [newCustomColor, setNewCustomColor] = useState('#3b82f6');
+  const [newCustomIcon, setNewCustomIcon] = useState<SupportIconType>('discord');
+  const [newCustomColor, setNewCustomColor] = useState('#5865F2');
+  const [editingCustomId, setEditingCustomId] = useState<string | null>(null);
 
   /* ─── Destek ayarları subscription ─── */
   useEffect(() => {
@@ -349,24 +350,67 @@ export default function AdminPanel() {
       setError('Lütfen destek seçeneği için başlık ve geçerli bir URL girin.');
       return;
     }
-    const newLink: CustomSupportLink = {
-      id: Date.now().toString(),
-      title: newCustomTitle.trim(),
-      url: newCustomUrl.trim(),
-      icon: newCustomIcon,
-      color: newCustomColor,
-      enabled: true,
-    };
-    setSupportSettings(prev => ({
-      ...prev,
-      customLinks: [...(prev.customLinks || []), newLink],
-    }));
+
+    if (editingCustomId) {
+      setSupportSettings(prev => ({
+        ...prev,
+        customLinks: prev.customLinks.map(l =>
+          l.id === editingCustomId
+            ? { ...l, title: newCustomTitle.trim(), url: newCustomUrl.trim(), icon: newCustomIcon, color: newCustomColor }
+            : l
+        ),
+      }));
+      setSuccess(`"${newCustomTitle.trim()}" güncellendi. Yayına almak için "Ayarları Kaydet" butonuna tıklayın.`);
+      setEditingCustomId(null);
+    } else {
+      const newLink: CustomSupportLink = {
+        id: Date.now().toString(),
+        title: newCustomTitle.trim(),
+        url: newCustomUrl.trim(),
+        icon: newCustomIcon,
+        color: newCustomColor,
+        enabled: true,
+      };
+      setSupportSettings(prev => ({
+        ...prev,
+        customLinks: [...(prev.customLinks || []), newLink],
+      }));
+      setSuccess(`"${newLink.title}" eklendi. Yayına almak için "Ayarları Kaydet" butonuna tıklayın.`);
+    }
+
     setNewCustomTitle('');
     setNewCustomUrl('');
-    setSuccess(`"${newLink.title}" eklendi. Yayına almak için "Ayarları Kaydet" butonuna tıklayın.`);
+  };
+
+  const handleStartEditCustomSupport = (link: CustomSupportLink) => {
+    setEditingCustomId(link.id);
+    setNewCustomTitle(link.title);
+    setNewCustomUrl(link.url);
+    setNewCustomIcon(link.icon);
+    setNewCustomColor(link.color || '#3b82f6');
+  };
+
+  const handleCancelEditCustomSupport = () => {
+    setEditingCustomId(null);
+    setNewCustomTitle('');
+    setNewCustomUrl('');
+    setNewCustomIcon('discord');
+    setNewCustomColor('#5865F2');
+  };
+
+  const handleApplyPreset = (preset: PlatformPreset) => {
+    setNewCustomTitle(preset.defaultTitle);
+    setNewCustomIcon(preset.id);
+    setNewCustomColor(preset.defaultColor);
+    if (!newCustomUrl || newCustomUrl.startsWith('https://')) {
+      setNewCustomUrl(preset.placeholderUrl);
+    }
   };
 
   const handleRemoveCustomSupport = (id: string) => {
+    if (editingCustomId === id) {
+      handleCancelEditCustomSupport();
+    }
     setSupportSettings(prev => ({
       ...prev,
       customLinks: prev.customLinks.filter(l => l.id !== id),
@@ -417,7 +461,7 @@ export default function AdminPanel() {
           active={activeTab === 'support'}
           onClick={() => setActiveTab('support')}
           icon={<Heart className="w-4 h-4 text-rose-500 fill-rose-500/20" />}
-          label="Destek Bağlantıları"
+          label="Destek & Topluluk"
         />
         <TabBtn
           id="tab-analytics"
@@ -1145,62 +1189,141 @@ export default function AdminPanel() {
                 </div>
               </div>
 
-              {/* ── 3. ÖZEL DESTEK BAĞLANTILARI (Buy Me a Coffee, BynoGame, Papara vb.) ── */}
-              <div className="p-6 bg-black border border-zinc-800 rounded-2xl">
-                <div className="mb-6">
+              {/* ── 3. ÖZEL TOPLULUK & DESTEK BAĞLANTILARI (Discord, Twitter, Mastodon, Matrix vb.) ── */}
+              <div className="p-6 bg-black border border-zinc-800 rounded-2xl space-y-6">
+                <div>
                   <h3 className="text-lg font-bold text-white flex items-center space-x-2">
                     <Gift className="w-5 h-5 text-purple-400" />
-                    <span>Özel Destek & Bağış Seçenekleri</span>
+                    <span>Topluluk & Destek Bağlantıları</span>
                   </h3>
                   <p className="text-xs text-zinc-500 mt-1">
-                    Buy Me a Coffee, BynoGame, Papara, Kreosus, Kripto cüzdan veya Discord sunucusu gibi dilediğiniz özel destek seçeneklerini ekleyin.
+                    Discord sunucunuz, Twitter / X hesabınız, Mastodon profiliniz, Matrix odanız, Telegram kanalınız, Buy Me a Coffee veya özel bağış bağlantılarınızı ekleyin. Sitenin üst alanında şık butonlar olarak görüntülenir.
                   </p>
                 </div>
 
-                {/* Yeni ekleme formu */}
-                <form onSubmit={handleAddCustomSupport} className="bg-zinc-950 border border-zinc-800 rounded-xl p-4 mb-6">
-                  <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">Yeni Destek Seçeneği Ekle</p>
+                {/* Hızlı Şablonlar (Tek tıkla ekleme) */}
+                <div>
+                  <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Hızlı Platform Şablonları (Tek tıkla form doldur)</span>
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {PLATFORM_PRESETS.map((preset) => (
+                      <button
+                        key={preset.id}
+                        type="button"
+                        onClick={() => handleApplyPreset(preset)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-xs text-zinc-300 hover:text-white transition-all active:scale-95 cursor-pointer"
+                        title={`${preset.label} şablonunu uygula`}
+                      >
+                        <span
+                          className="w-4 h-4 rounded-md flex items-center justify-center text-white p-0.5 shrink-0"
+                          style={{ backgroundColor: preset.defaultColor }}
+                        >
+                          <SupportIconRenderer icon={preset.id} className="w-2.5 h-2.5 text-white" />
+                        </span>
+                        <span className="font-medium">{preset.label}</span>
+                        {preset.badge && (
+                          <span className="text-[9px] text-zinc-500 font-mono bg-zinc-950 px-1 py-0.2 rounded border border-zinc-800/80">
+                            {preset.badge}
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Bağlantı Ekleme / Düzenleme Formu */}
+                <form onSubmit={handleAddCustomSupport} className="bg-zinc-950 border border-zinc-800 rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs font-bold text-zinc-300 uppercase tracking-wider">
+                      {editingCustomId ? 'Bağlantıyı Düzenle' : 'Yeni Bağlantı Ekle'}
+                    </p>
+                    {editingCustomId && (
+                      <button
+                        type="button"
+                        onClick={handleCancelEditCustomSupport}
+                        className="text-xs text-zinc-400 hover:text-white flex items-center gap-1"
+                      >
+                        <CloseIcon className="w-3 h-3" />
+                        <span>Düzenlemeyi İptal Et</span>
+                      </button>
+                    )}
+                  </div>
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
                     <div>
-                      <label className="block text-[11px] font-bold text-zinc-500 uppercase mb-1">Platform / Başlık</label>
+                      <label className="block text-[11px] font-bold text-zinc-500 uppercase mb-1">
+                        Platform / Başlık
+                      </label>
                       <input
                         type="text"
                         required
                         value={newCustomTitle}
                         onChange={e => setNewCustomTitle(e.target.value)}
-                        placeholder="Örn: Buy Me a Coffee"
+                        placeholder="Örn: Discord Sunucumuz"
                         className="w-full bg-black border border-zinc-800 rounded-lg px-3 py-2 text-white text-xs focus:border-blue-500 outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-zinc-500 uppercase mb-1">Bağlantı URL'si</label>
+                      <label className="block text-[11px] font-bold text-zinc-500 uppercase mb-1">
+                        Bağlantı URL'si
+                      </label>
                       <input
                         type="url"
                         required
                         value={newCustomUrl}
                         onChange={e => setNewCustomUrl(e.target.value)}
-                        placeholder="https://buymeacoffee.com/..."
-                        className="w-full bg-black border border-zinc-800 rounded-lg px-3 py-2 text-white text-xs focus:border-blue-500 outline-none"
+                        placeholder="https://..."
+                        className="w-full bg-black border border-zinc-800 rounded-lg px-3 py-2 text-white text-xs focus:border-blue-500 outline-none font-mono"
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-zinc-500 uppercase mb-1">İkon</label>
+                      <label className="block text-[11px] font-bold text-zinc-500 uppercase mb-1">
+                        İkon
+                      </label>
                       <select
                         value={newCustomIcon}
-                        onChange={e => setNewCustomIcon(e.target.value as SupportIconType)}
+                        onChange={e => {
+                          const val = e.target.value as SupportIconType;
+                          setNewCustomIcon(val);
+                          const matched = PLATFORM_PRESETS.find(p => p.id === val);
+                          if (matched && (!newCustomColor || newCustomColor === '#3b82f6' || newCustomColor === '#5865F2')) {
+                            setNewCustomColor(matched.defaultColor);
+                          }
+                        }}
                         className="w-full bg-black border border-zinc-800 rounded-lg px-3 py-2 text-white text-xs focus:border-blue-500 outline-none cursor-pointer"
                       >
-                        <option value="heart">Kalp</option>
-                        <option value="coffee">Kahve (Buy Me a Coffee)</option>
-                        <option value="gift">Hediye Kutusu</option>
-                        <option value="dollar">Para / Dolar</option>
-                        <option value="kofi">Ko-fi</option>
-                        <option value="patreon">Patreon</option>
-                        <option value="link">Dış Bağlantı</option>
+                        <optgroup label="💬 Topluluk & Sosyal">
+                          <option value="discord">Discord</option>
+                          <option value="twitter">X (Twitter)</option>
+                          <option value="mastodon">Mastodon</option>
+                          <option value="matrix">Matrix</option>
+                          <option value="telegram">Telegram</option>
+                          <option value="reddit">Reddit</option>
+                          <option value="github">GitHub</option>
+                          <option value="youtube">YouTube</option>
+                          <option value="twitch">Twitch</option>
+                          <option value="steam">Steam</option>
+                        </optgroup>
+                        <optgroup label="☕ Destek & Bağış">
+                          <option value="coffee">Buy Me a Coffee</option>
+                          <option value="kofi">Ko-fi</option>
+                          <option value="patreon">Patreon</option>
+                          <option value="heart">Kalp (Bağış)</option>
+                          <option value="gift">Hediye Kutusu</option>
+                          <option value="dollar">Para / Dolar / Kripto</option>
+                        </optgroup>
+                        <optgroup label="🌐 Diğer">
+                          <option value="globe">Web Sitesi</option>
+                          <option value="link">Dış Bağlantı</option>
+                        </optgroup>
                       </select>
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-zinc-500 uppercase mb-1">Vurgu Rengi</label>
+                      <label className="block text-[11px] font-bold text-zinc-500 uppercase mb-1">
+                        Vurgu Rengi
+                      </label>
                       <div className="flex items-center space-x-2">
                         <input
                           type="color"
@@ -1210,9 +1333,14 @@ export default function AdminPanel() {
                         />
                         <button
                           type="submit"
-                          className="flex-grow bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-3 rounded-lg text-xs transition-colors cursor-pointer"
+                          className={cn(
+                            "flex-grow font-bold py-2 px-3 rounded-lg text-xs transition-colors cursor-pointer text-white",
+                            editingCustomId
+                              ? "bg-amber-600 hover:bg-amber-500"
+                              : "bg-blue-600 hover:bg-blue-500"
+                          )}
                         >
-                          + Ekle
+                          {editingCustomId ? 'Güncelle' : '+ Ekle'}
                         </button>
                       </div>
                     </div>
@@ -1221,26 +1349,43 @@ export default function AdminPanel() {
 
                 {/* Eklenen özel bağlantılar listesi */}
                 <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                      Aktif Bağlantılar ({supportSettings.customLinks?.length || 0})
+                    </p>
+                    <span className="text-[11px] text-zinc-500">
+                      Değişiklikleri uygulamak için alttaki "Ayarları Kaydet" butonuna tıklayın.
+                    </span>
+                  </div>
+
                   {(!supportSettings.customLinks || supportSettings.customLinks.length === 0) ? (
-                    <div className="text-center py-6 border border-dashed border-zinc-800 rounded-xl text-zinc-500 text-xs">
-                      Henüz özel bir destek bağlantısı eklenmedi.
+                    <div className="text-center py-8 border border-dashed border-zinc-800 rounded-xl text-zinc-500 text-xs">
+                      Henüz özel bir topluluk veya destek bağlantısı eklenmedi. Yukarıdaki hazır şablonlara tıklayarak Discord, Twitter, Mastodon veya Matrix ekleyebilirsiniz.
                     </div>
                   ) : (
                     supportSettings.customLinks.map(link => (
                       <div
                         key={link.id}
-                        className="flex items-center justify-between p-3 bg-zinc-950 border border-zinc-800 rounded-xl"
+                        className={cn(
+                          "flex items-center justify-between p-3.5 bg-zinc-950 border rounded-xl transition-colors",
+                          editingCustomId === link.id
+                            ? "border-amber-500/60 bg-amber-950/10"
+                            : "border-zinc-800 hover:border-zinc-700"
+                        )}
                       >
-                        <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-3 min-w-0">
                           <span
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-white"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0 shadow-sm"
                             style={{ backgroundColor: link.color || '#3b82f6' }}
                           >
                             <SupportIconRenderer icon={link.icon} className="w-4 h-4 text-white" />
                           </span>
-                          <div>
+                          <div className="min-w-0">
                             <p className="text-sm font-semibold text-white flex items-center space-x-2">
-                              <span>{link.title}</span>
+                              <span className="truncate">{link.title}</span>
+                              <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700/60">
+                                {link.icon}
+                              </span>
                               {!link.enabled && (
                                 <span className="text-[10px] bg-zinc-800 text-zinc-500 px-1.5 py-0.5 rounded">Pasif</span>
                               )}
@@ -1249,14 +1394,14 @@ export default function AdminPanel() {
                               href={link.url}
                               target="_blank"
                               rel="noreferrer"
-                              className="text-[11px] text-zinc-500 hover:text-blue-400 truncate max-w-xs block"
+                              className="text-[11px] text-zinc-500 hover:text-blue-400 truncate max-w-sm block font-mono"
                             >
                               {link.url}
                             </a>
                           </div>
                         </div>
 
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-2 shrink-0">
                           <button
                             type="button"
                             onClick={() => handleToggleCustomSupport(link.id)}
@@ -1268,6 +1413,14 @@ export default function AdminPanel() {
                             )}
                           >
                             {link.enabled ? 'Aktif' : 'Pasif'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleStartEditCustomSupport(link)}
+                            className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
+                            title="Düzenle"
+                          >
+                            <Edit2 className="w-4 h-4" />
                           </button>
                           <button
                             type="button"

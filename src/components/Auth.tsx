@@ -28,22 +28,6 @@ import { cn } from '../lib/utils';
 
 type AuthMode = 'login' | 'register' | 'forgot';
 
-async function ensureUserProfile(user: any, fallbackNickname?: string) {
-  const userRef = doc(db, 'users', user.uid);
-  const snapshot = await getDoc(userRef);
-
-  if (!snapshot.exists()) {
-    await setDoc(userRef, {
-      nickname: fallbackNickname || user.displayName || user.email?.split('@')[0] || 'Kullanıcı',
-      email: user.email || null,
-      role: 'user',
-      onboardingComplete: false,
-      preferredCategories: [],
-      createdAt: new Date(),
-    });
-  }
-}
-
 export default function Auth() {
   const [mode, setMode] = useState<AuthMode>('login');
 
@@ -97,9 +81,8 @@ export default function Auth() {
     reset();
     try {
       const loginEmail = email.includes('@') ? email : `${email}@l9zone.local`;
-      const credential = await signInWithEmailAndPassword(auth, loginEmail, password);
-      await ensureUserProfile(credential.user, credential.user.displayName || credential.user.email?.split('@')[0]);
-      navigate('/welcome', { replace: true });
+      await signInWithEmailAndPassword(auth, loginEmail, password);
+      navigate('/');
     } catch (err: any) {
       setError(friendlyError(err));
     } finally {
@@ -122,11 +105,9 @@ export default function Auth() {
         nickname: nickname.trim(),
         email: email.trim() || null,
         role: 'user',
-        onboardingComplete: false,
-        preferredCategories: [],
         createdAt: new Date(),
       });
-      navigate('/welcome', { replace: true });
+      navigate('/');
     } catch (err: any) {
       setError(friendlyError(err));
     } finally {
@@ -158,8 +139,16 @@ export default function Auth() {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      await ensureUserProfile(user, user.displayName || user.email?.split('@')[0]);
-      navigate('/welcome', { replace: true });
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (!userDoc.exists()) {
+        await setDoc(doc(db, 'users', user.uid), {
+          nickname: user.displayName || user.email?.split('@')[0] || 'Kullanıcı',
+          email: user.email,
+          role: user.email === 'nijatemiraslanov@gmail.com' ? 'admin' : 'user',
+          createdAt: new Date(),
+        });
+      }
+      navigate('/');
     } catch (err: any) {
       setError(friendlyError(err));
     } finally {
@@ -476,7 +465,7 @@ function SubmitButton({ loading, label }: { loading: boolean; label: string }) {
     <button
       type="submit"
       disabled={loading}
-      className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-2xl transition-all shadow-lg shadow-blue-900/30 flex items-center justify-center gap-2 group"
+      className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-2xl transition-all shadow-lg shadow-blue-900/30 flex items-center justify-center gap-2 group text-sm"
     >
       {loading ? (
         <>

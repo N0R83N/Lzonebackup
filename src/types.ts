@@ -43,12 +43,28 @@ export interface UserProfile {
   nickname: string;
   email?: string;
   role: UserRole;
-  onboardingComplete?: boolean;
-  preferredCategories?: string[];
   createdAt?: any;
 }
 
-export type SupportIconType = 'patreon' | 'kofi' | 'coffee' | 'heart' | 'gift' | 'dollar' | 'link';
+export type SupportIconType =
+  | 'discord'
+  | 'twitter'
+  | 'mastodon'
+  | 'matrix'
+  | 'telegram'
+  | 'github'
+  | 'reddit'
+  | 'youtube'
+  | 'twitch'
+  | 'steam'
+  | 'patreon'
+  | 'kofi'
+  | 'coffee'
+  | 'heart'
+  | 'gift'
+  | 'dollar'
+  | 'link'
+  | 'globe';
 
 export interface CustomSupportLink {
   id: string;
@@ -110,3 +126,4 @@ export interface VisitorLog {
   userAgent: string;
   timestamp: any;
 }
+
