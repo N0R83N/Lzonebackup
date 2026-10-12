@@ -6,10 +6,13 @@ import { Software, Category } from '../types';
 export function getSiteBaseUrl(): string {
   if (typeof window !== 'undefined' && window.location && window.location.origin) {
     const origin = window.location.origin;
-    // Eğer localhost veya dev ortamı ise canlı alan adını veya mevcut adresi kullan
+    // Eğer localhost veya geçici dev ortamı ise canlı alan adını kullan
+    if (origin.includes('localhost') || origin.includes('run.app') || origin.includes('127.0.0.1')) {
+      return 'https://l9zone.nijatemiraslanov.workers.dev';
+    }
     return origin.replace(/\/+$/, '');
   }
-  return 'https://l9zone.pages.dev';
+  return 'https://l9zone.nijatemiraslanov.workers.dev';
 }
 
 /**

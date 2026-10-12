@@ -4,4 +4,4 @@ Disallow: /admin
 Disallow: /profile
 Disallow: /auth
 
-Sitemap: https://l9zone.pages.dev/sitemap.xml
+Sitemap: https://l9zone.nijatemiraslanov.workers.dev/sitemap.xml

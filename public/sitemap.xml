@@ -4,253 +4,265 @@
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
   <url>
-    <loc>https://l9zone.pages.dev/</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Oyunlar</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Oyunlar</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Oyunlar&amp;subcategory=PC%20Oyunlar%C4%B1</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Oyunlar&amp;subcategory=PC%20Oyunlar%C4%B1</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Oyunlar&amp;subcategory=Torrent%20Oyun</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Oyunlar&amp;subcategory=Torrent%20Oyun</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Oyunlar&amp;subcategory=Repack%20Oyunlar</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Oyunlar&amp;subcategory=Repack%20Oyunlar</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Oyunlar&amp;subcategory=Aksiyon%20%26%20Macera</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Oyunlar&amp;subcategory=Aksiyon%20%26%20Macera</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Oyunlar&amp;subcategory=RPG%20%26%20Rol%20Yapma</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Oyunlar&amp;subcategory=RPG%20%26%20Rol%20Yapma</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Oyunlar&amp;subcategory=Strateji%20%26%20Sim%C3%BClasyon</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Oyunlar&amp;subcategory=Strateji%20%26%20Sim%C3%BClasyon</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Oyunlar&amp;subcategory=Yar%C4%B1%C5%9F%20%26%20Spor</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Oyunlar&amp;subcategory=Yar%C4%B1%C5%9F%20%26%20Spor</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Oyunlar&amp;subcategory=Korku%20%26%20Hayatta%20Kalma</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Oyunlar&amp;subcategory=Korku%20%26%20Hayatta%20Kalma</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Oyunlar&amp;subcategory=FPS%20%26%20Ni%C5%9Fanc%C4%B1</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Oyunlar&amp;subcategory=FPS%20%26%20Ni%C5%9Fanc%C4%B1</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Oyunlar&amp;subcategory=Online%20%26%20%C3%87ok%20Oyunculu</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Oyunlar&amp;subcategory=Online%20%26%20%C3%87ok%20Oyunculu</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Oyunlar&amp;subcategory=Ba%C4%9F%C4%B1ms%C4%B1z%20(Indie)</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Oyunlar&amp;subcategory=Ba%C4%9F%C4%B1ms%C4%B1z%20(Indie)</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Oyunlar&amp;subcategory=Eski%20%26%20Nostalji%20Oyunlar</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Oyunlar&amp;subcategory=Eski%20%26%20Nostalji%20Oyunlar</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Oyunlar&amp;subcategory=T%C3%BCrk%C3%A7e%20Yama%20%26%20Modlar</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Oyunlar&amp;subcategory=T%C3%BCrk%C3%A7e%20Yama%20%26%20Modlar</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Oyunlar&amp;subcategory=Oyun%20Hileleri%20%26%20Trainer</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Oyunlar&amp;subcategory=Oyun%20Hileleri%20%26%20Trainer</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Programlar</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Programlar</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Programlar&amp;subcategory=Yaz%C4%B1l%C4%B1m%20%26%20Programlar%3A%20Windows%20Programlar%C4%B1</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Programlar&amp;subcategory=Yaz%C4%B1l%C4%B1m%20%26%20Programlar%3A%20Windows%20Programlar%C4%B1</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Programlar&amp;subcategory=macOS%20Programlar%C4%B1</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Programlar&amp;subcategory=macOS%20Programlar%C4%B1</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Programlar&amp;subcategory=Portable%20(Kurulumsuz)</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Programlar&amp;subcategory=Portable%20(Kurulumsuz)</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Programlar&amp;subcategory=Sistem%20%26%20Bak%C4%B1m%20Ara%C3%A7lar%C4%B1</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Programlar&amp;subcategory=Sistem%20%26%20Bak%C4%B1m%20Ara%C3%A7lar%C4%B1</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Programlar&amp;subcategory=Antivir%C3%BCs%20%26%20G%C3%BCvenlik</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Programlar&amp;subcategory=Antivir%C3%BCs%20%26%20G%C3%BCvenlik</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Programlar&amp;subcategory=Grafik%20%26%20Tasar%C4%B1m</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Programlar&amp;subcategory=Grafik%20%26%20Tasar%C4%B1m</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Programlar&amp;subcategory=Video%20%26%20Ses%20D%C3%BCzenleme</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Programlar&amp;subcategory=Video%20%26%20Ses%20D%C3%BCzenleme</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Programlar&amp;subcategory=3D%20Modelleme%20%26%20Animasyon</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Programlar&amp;subcategory=3D%20Modelleme%20%26%20Animasyon</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Programlar&amp;subcategory=Ofis%20%26%20PDF%20Ara%C3%A7lar%C4%B1</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Programlar&amp;subcategory=Ofis%20%26%20PDF%20Ara%C3%A7lar%C4%B1</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Programlar&amp;subcategory=%C4%B0nternet%20%26%20%C4%B0ndirme%20Y%C3%B6neticileri</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Programlar&amp;subcategory=%C4%B0nternet%20%26%20%C4%B0ndirme%20Y%C3%B6neticileri</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Programlar&amp;subcategory=Yedekleme%20%26%20Kurtarma</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Programlar&amp;subcategory=Yedekleme%20%26%20Kurtarma</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Programlar&amp;subcategory=S%C3%BCr%C3%BCc%C3%BC%20(Driver)%20%26%20Donan%C4%B1m</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Programlar&amp;subcategory=S%C3%BCr%C3%BCc%C3%BC%20(Driver)%20%26%20Donan%C4%B1m</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=Programlar&amp;subcategory=Geli%C5%9Ftirici%20%26%20Kodlama%20Ara%C3%A7lar%C4%B1</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=Programlar&amp;subcategory=Geli%C5%9Ftirici%20%26%20Kodlama%20Ara%C3%A7lar%C4%B1</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=%C4%B0%C5%9Fletim%20sistemleri</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=%C4%B0%C5%9Fletim%20sistemleri</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=%C4%B0%C5%9Fletim%20sistemleri&amp;subcategory=Windows%2011</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=%C4%B0%C5%9Fletim%20sistemleri&amp;subcategory=Windows%2011</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=%C4%B0%C5%9Fletim%20sistemleri&amp;subcategory=Windows%2010</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=%C4%B0%C5%9Fletim%20sistemleri&amp;subcategory=Windows%2010</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=%C4%B0%C5%9Fletim%20sistemleri&amp;subcategory=Modlu%20Windows%20(Lite%20%2F%20Ghost)</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=%C4%B0%C5%9Fletim%20sistemleri&amp;subcategory=Modlu%20Windows%20(Lite%20%2F%20Ghost)</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=%C4%B0%C5%9Fletim%20sistemleri&amp;subcategory=macOS%20S%C3%BCr%C3%BCmleri</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=%C4%B0%C5%9Fletim%20sistemleri&amp;subcategory=macOS%20S%C3%BCr%C3%BCmleri</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=%C4%B0%C5%9Fletim%20sistemleri&amp;subcategory=Linux%20Da%C4%9F%C4%B1t%C4%B1mlar%C4%B1</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=%C4%B0%C5%9Fletim%20sistemleri&amp;subcategory=Linux%20Da%C4%9F%C4%B1t%C4%B1mlar%C4%B1</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/?category=%C4%B0%C5%9Fletim%20sistemleri&amp;subcategory=%C3%96ny%C3%BCklenebilir%20(Bootable)%20USB%20Ara%C3%A7lar%C4%B1</loc>
-    <lastmod>2026-10-11</lastmod>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/?category=%C4%B0%C5%9Fletim%20sistemleri&amp;subcategory=%C3%96ny%C3%BCklenebilir%20(Bootable)%20USB%20Ara%C3%A7lar%C4%B1</loc>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/software/f2Pb5Kxf2RWtafICLWhW</loc>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/software/0gZaGnRk3BYMc4VtrRQt</loc>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/software/j3ehjonjb6iMfDbYpS5K</loc>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/software/f2Pb5Kxf2RWtafICLWhW</loc>
     <lastmod>2026-10-11</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/software/4vILWzXH5cb0xA5GlDpe</loc>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/software/4vILWzXH5cb0xA5GlDpe</loc>
     <lastmod>2026-10-11</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/software/1lwFg9bh2H3f62reV17h</loc>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/software/1lwFg9bh2H3f62reV17h</loc>
     <lastmod>2026-10-11</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/software/TY7e9Hx9KEUNdhYPfE4l</loc>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/software/TY7e9Hx9KEUNdhYPfE4l</loc>
     <lastmod>2026-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l9zone.pages.dev/software/dhjk2EFDWGuZBCv0UQw3</loc>
+    <loc>https://l9zone.nijatemiraslanov.workers.dev/software/dhjk2EFDWGuZBCv0UQw3</loc>
     <lastmod>2026-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>

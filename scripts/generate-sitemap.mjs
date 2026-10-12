@@ -15,7 +15,7 @@ const db = initializeFirestore(app, {
   experimentalForceLongPolling: true,
 }, config.firestoreDatabaseId);
 
-export async function buildSitemapXml(customDomain = 'https://l9zone.pages.dev') {
+export async function buildSitemapXml(customDomain = 'https://l9zone.nijatemiraslanov.workers.dev') {
   const baseUrl = customDomain.replace(/\/+$/, '');
   const today = new Date().toISOString().split('T')[0];
 
@@ -99,8 +99,9 @@ ${xmlUrls}
 }
 
 async function run() {
-  console.log('Generating dynamic sitemap from Firestore...');
-  const xml = await buildSitemapXml();
+  const customDomain = process.argv[2] || process.env.VITE_SITE_URL || 'https://l9zone.nijatemiraslanov.workers.dev';
+  console.log('Generating dynamic sitemap from Firestore for:', customDomain);
+  const xml = await buildSitemapXml(customDomain);
   const target = path.resolve(__dirname, '../public/sitemap.xml');
   fs.writeFileSync(target, xml, 'utf8');
   console.log('Successfully written to', target);

@@ -3,8 +3,9 @@ import { Software, Category } from '../types';
 import { generateSitemapXml, downloadSitemapFile, getSiteBaseUrl } from '../utils/sitemapGenerator';
 import {
   FileCode, Download, Copy, Check, ExternalLink, Globe,
-  Sparkles, RefreshCw, Layers, CheckCircle2, AlertCircle, Search, Info
+  Sparkles, RefreshCw, Layers, CheckCircle2, AlertCircle, Search, Info, ShieldAlert
 } from 'lucide-react';
+import { cn } from '../lib/utils';
 
 interface SitemapManagerProps {
   softwares: Software[];
@@ -152,6 +153,20 @@ export default function SitemapManager({ softwares, categories }: SitemapManager
         </div>
       </div>
 
+      {/* Search Console "URL'ye izin verilmiyor" Hatası ve Çözüm Bilgisi */}
+      <div className="bg-gradient-to-r from-red-950/40 via-amber-950/20 to-zinc-950 border border-red-500/30 rounded-2xl p-5 space-y-2.5">
+        <div className="flex items-center gap-2 text-red-300 font-semibold text-sm">
+          <ShieldAlert className="w-5 h-5 text-red-400 shrink-0" />
+          <span>Google Search Console: "URL'ye izin verilmiyor" Hatası Neden Oldu?</span>
+        </div>
+        <p className="text-xs text-zinc-300 leading-relaxed">
+          Google Search Console'da kayıtlı mülkünüz <strong className="text-amber-300 font-mono">https://l9zone.nijatemiraslanov.workers.dev/</strong> adresidir. Ancak önceki sitemap dosyasındaki bağlantılar <code className="text-red-300 bg-black/40 px-1 py-0.5 rounded">https://l9zone.pages.dev/</code> olarak üretildiği için Google bunu <em>farklı bir alan adına (cross-domain) ait</em> kabul etmiş ve <strong>"Bu URL'ye, bu yerdeki bir Site Haritası için izin verilmiyor"</strong> uyarısı vermiştir.
+        </p>
+        <p className="text-xs text-emerald-300 leading-relaxed font-medium">
+          ✔ <strong>Çözüldü:</strong> Haritanız artık doğrudan <code className="text-emerald-200 bg-black/50 px-1.5 py-0.5 rounded font-mono">https://l9zone.nijatemiraslanov.workers.dev</code> olarak güncellenmiştir. Search Console'da haritayı yeniden gönderdiğinizde tüm içerikleriniz onaylanacaktır.
+        </p>
+      </div>
+
       {/* Canlı Alan Adı Ayarı */}
       <div className="bg-zinc-950/50 border border-zinc-800 rounded-2xl p-5 space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -168,6 +183,7 @@ export default function SitemapManager({ softwares, categories }: SitemapManager
             <span>Canlı /sitemap.xml Dosyasını Tarayıcıda Aç</span>
           </a>
         </div>
+
         <div className="flex gap-2">
           <div className="relative flex-1">
             <Globe className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500" />
@@ -175,22 +191,48 @@ export default function SitemapManager({ softwares, categories }: SitemapManager
               type="text"
               value={domain}
               onChange={(e) => setDomain(e.target.value)}
-              placeholder="https://l9zone.pages.dev"
+              placeholder="https://l9zone.nijatemiraslanov.workers.dev"
               className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 font-mono"
             />
           </div>
           <button
             onClick={() => setDomain(getSiteBaseUrl())}
-            className="px-3.5 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-medium border border-zinc-700/60 flex items-center gap-1.5"
+            className="px-3.5 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-medium border border-zinc-700/60 flex items-center gap-1.5 cursor-pointer"
             title="Varsayılan Alan Adına Sıfırla"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Sıfırla</span>
           </button>
         </div>
-        <p className="text-xs text-zinc-500">
-          Google Search Console'da kayıtlı olan alan adınızı girerek sitemap içindeki bağlantı kökünü tek tıkla değiştirebilirsiniz.
-        </p>
+
+        {/* Hızlı Alan Adı Seçicileri */}
+        <div className="flex flex-wrap items-center gap-2 pt-1">
+          <span className="text-[11px] text-zinc-500 font-medium">Hızlı Seçim:</span>
+          <button
+            type="button"
+            onClick={() => setDomain('https://l9zone.nijatemiraslanov.workers.dev')}
+            className={cn(
+              "text-xs px-2.5 py-1 rounded-lg border font-mono transition-all cursor-pointer",
+              domain === 'https://l9zone.nijatemiraslanov.workers.dev'
+                ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-white"
+            )}
+          >
+            l9zone.nijatemiraslanov.workers.dev (Search Console Mülkü)
+          </button>
+          <button
+            type="button"
+            onClick={() => setDomain('https://l9zone.pages.dev')}
+            className={cn(
+              "text-xs px-2.5 py-1 rounded-lg border font-mono transition-all cursor-pointer",
+              domain === 'https://l9zone.pages.dev'
+                ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-white"
+            )}
+          >
+            l9zone.pages.dev
+          </button>
+        </div>
       </div>
 
       {/* Görünüm Seçimi & Liste */}
