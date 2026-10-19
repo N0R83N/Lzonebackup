@@ -21,7 +21,7 @@ export default function SitemapManager({ softwares, categories }: SitemapManager
 
   const xmlContent = generateSitemapXml(softwares, categories, domain);
 
-  // Toplam URL hesaplama (Ana Sayfa + Kategoriler + Alt Kategoriler + Yazılımlar)
+  // Panelde gösterilen kategori sayıları içerik yönetimi içindir; sitemap yalnızca canonical sayfaları listeler.
   const uniqueCategories = new Set<string>();
   let subcategoryCount = 0;
   categories.forEach(c => {
@@ -75,7 +75,7 @@ export default function SitemapManager({ softwares, categories }: SitemapManager
                 </span>
               </h2>
               <p className="text-sm text-zinc-400 mt-0.5">
-                Google Search Console ve botların sitenizdeki her oyunu, programı ve kategoriyi dizine eklemesi için otomatik XML haritası.
+                Canlı sayfalar ve içerik detayları için sitemap önizlemesi; indirme, canlı dosyayı yayımlamaz.
               </p>
             </div>
           </div>
