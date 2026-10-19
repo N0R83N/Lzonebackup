@@ -16,19 +16,6 @@ function escapeXml(value: string): string {
     .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 }
 
-function getLastModified(value: Software['createdAt']): string | undefined {
-  try {
-    const date = value && typeof (value as any).toDate === 'function'
-      ? (value as any).toDate()
-      : value && typeof (value as any).seconds === 'number'
-        ? new Date((value as any).seconds * 1000)
-        : undefined;
-    return date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : undefined;
-  } catch {
-    return undefined;
-  }
-}
-
 /** Build a sitemap from canonical pages only; query filters are not separate landing pages. */
 export function generateSitemapXml(
   softwares: Software[],
@@ -40,12 +27,11 @@ export function generateSitemapXml(
     { loc: baseUrl + '/' },
     ...softwares.map((software) => ({
       loc: baseUrl + '/software/' + encodeURIComponent(software.id),
-      lastmod: getLastModified(software.createdAt),
     })),
   ];
   const xmlUrls = urls.map((url) => `  <url>
     <loc>${escapeXml(url.loc)}</loc>
-${url.lastmod ? `    <lastmod>${url.lastmod}</lastmod>\n` : ''}  </url>`).join('\n');
+  </url>`).join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
