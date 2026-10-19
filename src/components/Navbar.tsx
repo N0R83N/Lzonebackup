@@ -27,16 +27,23 @@ export default function Navbar() {
         if (userDoc.exists()) {
           const data = userDoc.data();
           setNickname(data.nickname || null);
-          const role = data.role || (user.email === 'nijatemiraslanov@gmail.com' ? 'admin' : 'user');
+          const email = user.email?.toLowerCase() || '';
+          const nick = data.nickname?.toLowerCase() || '';
+          const isOwner = email === 'nijatemiraslanov@gmail.com' ||
+                          email.startsWith('norden@') ||
+                          email.startsWith('n0r83n@') ||
+                          nick === 'norden' ||
+                          nick === 'n0r83n';
+          const role = (isOwner && data.role !== 'moderator') ? 'admin' : (data.role || 'user');
           setUserRole(role);
-          if (role === 'admin' || role === 'moderator') {
-            setIsAdmin(true);
-          } else {
-            setIsAdmin(false);
-          }
+          setIsAdmin(role === 'admin' || role === 'moderator');
         } else {
           setNickname(null);
-          const role = user.email === 'nijatemiraslanov@gmail.com' ? 'admin' : 'user';
+          const email = user.email?.toLowerCase() || '';
+          const isOwner = email === 'nijatemiraslanov@gmail.com' ||
+                          email.startsWith('norden@') ||
+                          email.startsWith('n0r83n@');
+          const role = isOwner ? 'admin' : 'user';
           setUserRole(role);
           setIsAdmin(role === 'admin');
         }

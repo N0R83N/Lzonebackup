@@ -7,6 +7,7 @@ import SoftwareCard from '../components/SoftwareCard';
 import SupportLinksBar from '../components/SupportLinksBar';
 import { Sparkles, Terminal, Cpu, Zap } from 'lucide-react';
 import { motion } from 'motion/react';
+import { getYoutubeId } from '../lib/utils';
 
 export default function Home() {
   const [softwares, setSoftwares] = useState<Software[]>([]);
@@ -86,10 +87,22 @@ export default function Home() {
                   <Link to={`/software/${sw.id}`} className="block group">
                     <div className="relative aspect-video rounded-2xl overflow-hidden border border-zinc-800 group-hover:border-blue-500/50 transition-all">
                       <img
-                        src={sw.mediaUrl}
+                        src={
+                          sw.coverImage ||
+                          (sw.mediaType === 'youtube'
+                            ? `https://img.youtube.com/vi/${getYoutubeId(sw.youtubeUrl || sw.mediaUrl)}/maxresdefault.jpg`
+                            : sw.mediaUrl)
+                        }
                         alt={sw.title}
                         className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
                         referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          const img = e.target as HTMLImageElement;
+                          const ytId = getYoutubeId(sw.youtubeUrl || sw.mediaUrl);
+                          if (ytId && !img.src.includes('hqdefault')) {
+                            img.src = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+                          }
+                        }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                       <div className="absolute top-4 right-4 flex gap-2">

@@ -4,9 +4,10 @@ import { db } from '../firebase';
 import { doc, getDoc, collection, addDoc, query, orderBy, onSnapshot, Timestamp, deleteDoc } from 'firebase/firestore';
 import { Software, Comment } from '../types';
 import ReactMarkdown from 'react-markdown';
-import { Calendar, Tag, Download, ArrowLeft, ShieldCheck, Layers, MessageSquare, User, Send, Trash2, Reply, X, Info } from 'lucide-react';
+import { Calendar, Tag, Download, ArrowLeft, ShieldCheck, Layers, MessageSquare, User, Send, Trash2, Reply, X, Info, Video, Images, ZoomIn } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth } from '../firebase';
+import { getYoutubeId } from '../lib/utils';
 
 const BANNED_WORDS = ['küfür1', 'küfür2', 'küfür3']; // Örnek küfür listesi, gerçek hayatta daha kapsamlı olmalı
 
@@ -21,6 +22,7 @@ export default function SoftwareDetail() {
   const [submitting, setSubmitting] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
   const moderateContent = (text: string) => {
     // Küfür temizleme
@@ -201,11 +203,15 @@ export default function SoftwareDetail() {
     );
   }
 
-  const getYoutubeId = (url: string) => {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
-  };
+  const ytUrl = software.youtubeUrl || (software.mediaType === 'youtube' ? software.mediaUrl : null);
+  const ytId = getYoutubeId(ytUrl);
+  const coverImg = software.coverImage || (software.mediaType !== 'youtube' ? software.mediaUrl : null);
+  const gallery = software.galleryImages || [];
+  const heroImage = coverImg || (ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : software.mediaUrl);
+  const allImages = [
+    ...(coverImg ? [{ url: coverImg, label: 'Kapak Görseli' }] : []),
+    ...gallery.map((url, i) => ({ url, label: `Ekran Görüntüsü #${i + 1}` })),
+  ];
 
   return (
     <div className="min-h-screen bg-black text-white pb-20">
@@ -213,10 +219,16 @@ export default function SoftwareDetail() {
       <div className="relative h-[40vh] md:h-[60vh] overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src={software.mediaType === 'youtube' ? `https://img.youtube.com/vi/${getYoutubeId(software.mediaUrl)}/maxresdefault.jpg` : software.mediaUrl}
+            src={heroImage}
             alt={software.title}
             className="w-full h-full object-cover opacity-40 blur-sm scale-110"
             referrerPolicy="no-referrer"
+            onError={(e) => {
+              const img = e.target as HTMLImageElement;
+              if (ytId && !img.src.includes('hqdefault')) {
+                img.src = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+              }
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
         </div>
@@ -273,24 +285,92 @@ export default function SoftwareDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-12">
-            {/* Media Display */}
-            <div className="rounded-3xl overflow-hidden bg-zinc-900 border border-zinc-800 shadow-2xl">
-              {software.mediaType === 'youtube' ? (
-                <div className="aspect-video">
-                  <iframe
-                    src={`https://www.youtube.com/embed/${getYoutubeId(software.mediaUrl)}`}
-                    title={software.title}
-                    className="w-full h-full"
-                    allowFullScreen
-                  />
+            {/* Medya Gösterimi (YouTube Video ve/veya Görsel & Ekran Görüntüleri Galerisi) */}
+            <div className="space-y-6">
+              {/* 1. YouTube Tanıtım Videosu (Varsa) */}
+              {ytId && (
+                <div className="rounded-3xl overflow-hidden bg-zinc-900 border border-zinc-800 shadow-2xl">
+                  <div className="px-5 py-3.5 bg-zinc-950/80 border-b border-zinc-800 flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse" />
+                      <span className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center space-x-1.5">
+                        <Video className="w-3.5 h-3.5 text-red-500" />
+                        <span>Tanıtım & Oynanış Videosu</span>
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-zinc-500 font-medium">YouTube HD</span>
+                  </div>
+                  <div className="aspect-video bg-black">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${ytId}?rel=0`}
+                      title={software.title}
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
                 </div>
-              ) : (
-                <img
-                  src={software.mediaUrl}
-                  alt={software.title}
-                  className="w-full h-auto"
-                  referrerPolicy="no-referrer"
-                />
+              )}
+
+              {/* 2. Kapak Görseli (Eğer Video Yoksa Ana Vitrin Olarak Göster) */}
+              {!ytId && allImages.length > 0 && (
+                <div
+                  className="rounded-3xl overflow-hidden bg-zinc-900 border border-zinc-800 shadow-2xl relative group cursor-pointer"
+                  onClick={() => setLightboxImage(allImages[0].url)}
+                >
+                  <img
+                    src={allImages[0].url}
+                    alt={software.title}
+                    className="w-full h-auto object-cover max-h-[550px] transition-transform duration-500 group-hover:scale-[1.01]"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute bottom-4 right-4 bg-black/80 backdrop-blur-md text-white text-xs px-3 py-1.5 rounded-xl border border-zinc-700/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center space-x-1.5 shadow-lg">
+                    <ZoomIn className="w-3.5 h-3.5 text-blue-400" />
+                    <span>Büyütmek için tıkla</span>
+                  </div>
+                </div>
+              )}
+
+              {/* 3. Ek Resimler & Ekran Görüntüleri Galerisi */}
+              {allImages.length > 0 && (ytId || allImages.length > 1) && (
+                <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-3xl p-6 space-y-4">
+                  <div className="flex items-center justify-between border-b border-zinc-800/60 pb-3">
+                    <h3 className="text-base font-bold flex items-center space-x-2 text-white">
+                      <Images className="w-4 h-4 text-emerald-400" />
+                      <span>Ekran Görüntüleri & Fotoğraflar</span>
+                      <span className="text-xs text-zinc-500 font-normal">({allImages.length} görsel)</span>
+                    </h3>
+                    <span className="text-[11px] text-zinc-500">Tam boy incelemek için tıklayın</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
+                    {allImages.map((img, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => setLightboxImage(img.url)}
+                        className="group relative aspect-video rounded-xl overflow-hidden border border-zinc-800 bg-zinc-950 cursor-pointer hover:border-blue-500 transition-all shadow-md"
+                      >
+                        <img
+                          src={img.url}
+                          alt={img.label}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          referrerPolicy="no-referrer"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = 'https://placehold.co/400x240/18181b/71717a?text=Görsel';
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <div className="w-9 h-9 rounded-full bg-blue-600/90 text-white flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
+                            <ZoomIn className="w-4 h-4" />
+                          </div>
+                        </div>
+                        <div className="absolute bottom-2 left-2 bg-black/80 backdrop-blur-sm text-[10px] text-zinc-300 px-2 py-0.5 rounded-md border border-zinc-700/50">
+                          {img.label}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
 
@@ -328,10 +408,14 @@ export default function SoftwareDetail() {
                     href={software.downloadUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition-all flex items-center justify-center space-x-2 shadow-lg shadow-blue-900/20"
+                    className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-all flex items-center justify-center space-x-2.5 shadow-lg shadow-blue-900/30 group/btn"
                   >
-                    <Download className="w-5 h-5" />
-                    <span>Hemen İndir</span>
+                    <Download className="w-5 h-5 group-hover/btn:-translate-y-0.5 transition-transform" />
+                    <span>
+                      {software.downloadName && software.downloadName.trim()
+                        ? (software.downloadName.toLowerCase().includes('indir') ? software.downloadName.trim() : `${software.downloadName.trim()} ile İndir`)
+                        : 'Hemen İndir'}
+                    </span>
                   </a>
                 )}
 
@@ -340,10 +424,14 @@ export default function SoftwareDetail() {
                     href={software.downloadUrl2}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-4 rounded-2xl transition-all flex items-center justify-center space-x-2"
+                    className="w-full bg-zinc-800 hover:bg-zinc-700 hover:border-zinc-600 border border-zinc-700/60 text-zinc-200 hover:text-white font-bold py-3.5 rounded-2xl transition-all flex items-center justify-center space-x-2.5 group/btn"
                   >
-                    <Download className="w-5 h-5" />
-                    <span>Alternatif İndir</span>
+                    <Download className="w-4 h-4 text-zinc-400 group-hover/btn:text-white transition-colors" />
+                    <span>
+                      {software.downloadName2 && software.downloadName2.trim()
+                        ? (software.downloadName2.toLowerCase().includes('indir') ? software.downloadName2.trim() : `${software.downloadName2.trim()} ile İndir`)
+                        : 'Alternatif İndir'}
+                    </span>
                   </a>
                 )}
               </div>
@@ -508,6 +596,39 @@ export default function SoftwareDetail() {
           </div>
         </div>
       </div>
+
+      {/* Lightbox / Tam Boy Görsel Önizleme Modalı */}
+      <AnimatePresence>
+        {lightboxImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-4 sm:p-8"
+            onClick={() => setLightboxImage(null)}
+          >
+            <button
+              onClick={() => setLightboxImage(null)}
+              className="absolute top-5 right-5 p-3 bg-zinc-900/90 hover:bg-zinc-800 text-white rounded-2xl border border-zinc-700/60 transition-all z-10 shadow-2xl flex items-center space-x-1.5 text-xs font-bold"
+              title="Kapat (ESC)"
+            >
+              <X className="w-5 h-5" />
+              <span className="hidden sm:inline">Kapat</span>
+            </button>
+            <div
+              className="relative max-w-6xl max-h-[90vh] flex items-center justify-center"
+              onClick={e => e.stopPropagation()}
+            >
+              <img
+                src={lightboxImage}
+                alt="Tam boy ekran görüntüsü"
+                className="max-w-full max-h-[85vh] object-contain rounded-2xl border border-zinc-800 shadow-2xl"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

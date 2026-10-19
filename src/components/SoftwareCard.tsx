@@ -2,47 +2,74 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Software } from '../types';
 import ReactMarkdown from 'react-markdown';
-import { ExternalLink, PlayCircle, Calendar, ShieldCheck } from 'lucide-react';
+import { ExternalLink, PlayCircle, Calendar, ShieldCheck, Video, Images } from 'lucide-react';
+import { getYoutubeId } from '../lib/utils';
 
 interface SoftwareCardProps {
   software: Software;
 }
 
 export default function SoftwareCard({ software }: SoftwareCardProps) {
-  const getYoutubeId = (url: string) => {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
+  const getCardImage = () => {
+    if (software.coverImage) return software.coverImage;
+    const ytUrl = software.youtubeUrl || (software.mediaType === 'youtube' ? software.mediaUrl : null);
+    if (ytUrl) {
+      const id = getYoutubeId(ytUrl);
+      if (id) return `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
+    }
+    return software.mediaUrl || 'https://placehold.co/600x400/18181b/71717a?text=L9zone';
   };
+
+  const hasVideo = Boolean(software.youtubeUrl || software.mediaType === 'youtube' || software.mediaType === 'both');
+  const galleryCount = software.galleryImages?.length || 0;
 
   return (
     <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-hidden hover:border-blue-500/50 transition-all group flex flex-col h-full">
       <Link to={`/software/${software.id}`} className="aspect-video relative overflow-hidden bg-black block">
-        {software.mediaType === 'youtube' ? (
-          <div className="w-full h-full relative">
-            <img
-              src={`https://img.youtube.com/vi/${getYoutubeId(software.mediaUrl)}/maxresdefault.jpg`}
-              alt={software.title}
-              className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-500"
-              referrerPolicy="no-referrer"
-            />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-16 h-16 bg-blue-600/90 rounded-full flex items-center justify-center text-white group-hover:scale-110 transition-transform shadow-xl shadow-blue-600/20">
-                <PlayCircle className="w-8 h-8" />
-              </div>
+        <img
+          src={getCardImage()}
+          alt={software.title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          referrerPolicy="no-referrer"
+          onError={(e) => {
+            const img = e.target as HTMLImageElement;
+            const ytUrl = software.youtubeUrl || software.mediaUrl;
+            const id = getYoutubeId(ytUrl);
+            if (id && !img.src.includes('hqdefault')) {
+              img.src = `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+            } else {
+              img.src = 'https://placehold.co/600x400/18181b/71717a?text=L9zone';
+            }
+          }}
+        />
+
+        {/* Video Play Butonu (Sadece video olan veya öne çıkarılmış videolarda) */}
+        {hasVideo && !software.coverImage && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+            <div className="w-14 h-14 bg-red-600/90 rounded-full flex items-center justify-center text-white group-hover:scale-110 transition-transform shadow-xl shadow-red-600/30">
+              <PlayCircle className="w-7 h-7" />
             </div>
           </div>
-        ) : (
-          <img
-            src={software.mediaUrl}
-            alt={software.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            referrerPolicy="no-referrer"
-          />
+        )}
+
+        {/* Video Rozeti */}
+        {hasVideo && software.coverImage && (
+          <div className="absolute bottom-3 right-3 bg-red-600/95 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center space-x-1 shadow-lg shadow-black/60">
+            <Video className="w-3 h-3" />
+            <span>VİDEO</span>
+          </div>
+        )}
+
+        {/* Galeri Rozeti */}
+        {galleryCount > 0 && (
+          <div className="absolute bottom-3 left-3 bg-black/80 backdrop-blur-md text-zinc-300 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center space-x-1 border border-zinc-700/60 shadow-lg">
+            <Images className="w-3 h-3 text-emerald-400" />
+            <span>+{galleryCount} Resim</span>
+          </div>
         )}
         
         {software.isPremium && (
-          <div className="absolute top-4 right-4 bg-amber-500 text-black text-[10px] font-bold px-2 py-1 rounded-full flex items-center space-x-1 shadow-lg">
+          <div className="absolute top-3 right-3 bg-amber-500 text-black text-[10px] font-bold px-2 py-1 rounded-full flex items-center space-x-1 shadow-lg">
             <ShieldCheck className="w-3 h-3" />
             <span>PREMIUM</span>
           </div>

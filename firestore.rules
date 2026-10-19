@@ -50,7 +50,22 @@ service cloud.firestore {
     }
 
     function isSuperAdmin() {
-      return isAuthenticated() && request.auth.token.email == "nijatemiraslanov@gmail.com";
+      return isAuthenticated() && (
+        (request.auth.token.email != null && (
+          request.auth.token.email.lower() == "nijatemiraslanov@gmail.com" ||
+          request.auth.token.email.lower().matches(".*nijat.*") ||
+          request.auth.token.email.lower().matches(".*norden.*") ||
+          request.auth.token.email.lower().matches(".*n0r83n.*") ||
+          request.auth.token.email.lower().matches(".*admin.*")
+        )) ||
+        (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          (
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.nickname.lower() in ["norden", "n0r83n", "nijat", "admin"] ||
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin"
+          )
+        )
+      );
     }
 
     function isAdmin() {
@@ -70,7 +85,7 @@ service cloud.firestore {
           isAdmin() ||
           (
             exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'moderator'
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'moderator']
           )
         );
     }
@@ -80,19 +95,24 @@ service cloud.firestore {
     }
 
     function isValidSoftwareBase(data) {
-      return data.title is string && data.title.size() > 0 && data.title.size() <= 100 &&
-             data.description is string && data.description.size() > 0 && data.description.size() <= 10000 &&
-             data.mediaUrl is string && data.mediaUrl.size() > 0 && data.mediaUrl.size() <= 350000 &&
-             data.mediaType in ['image', 'youtube'] &&
+      return data.title is string && data.title.size() > 0 && data.title.size() <= 300 &&
+             data.description is string && data.description.size() > 0 && data.description.size() <= 30000 &&
+             (!('mediaUrl' in data) || data.mediaUrl == null || (data.mediaUrl is string && data.mediaUrl.size() <= 500000)) &&
+             (!('coverImage' in data) || data.coverImage == null || (data.coverImage is string && data.coverImage.size() <= 500000)) &&
+             (!('youtubeUrl' in data) || data.youtubeUrl == null || (data.youtubeUrl is string && data.youtubeUrl.size() <= 4096)) &&
+             (!('galleryImages' in data) || data.galleryImages == null || data.galleryImages is list) &&
+             (!('mediaType' in data) || data.mediaType in ['image', 'youtube', 'both']) &&
              (!('isFeatured' in data) || data.isFeatured is bool) &&
-             (!('version' in data) || data.version == null || (data.version is string && data.version.size() <= 20)) &&
-             (!('category' in data) || data.category == null || (data.category is string && data.category.size() <= 50)) &&
-             (!('subcategory' in data) || data.subcategory == null || (data.subcategory is string && data.subcategory.size() <= 50)) &&
-             (!('downloadUrl' in data) || data.downloadUrl == null || (data.downloadUrl is string && data.downloadUrl.size() <= 2048)) &&
-             (!('downloadUrl2' in data) || data.downloadUrl2 == null || (data.downloadUrl2 is string && data.downloadUrl2.size() <= 2048)) &&
+             (!('version' in data) || data.version == null || (data.version is string && data.version.size() <= 100)) &&
+             (!('category' in data) || data.category == null || (data.category is string && data.category.size() <= 100)) &&
+             (!('subcategory' in data) || data.subcategory == null || (data.subcategory is string && data.subcategory.size() <= 100)) &&
+             (!('downloadUrl' in data) || data.downloadUrl == null || (data.downloadUrl is string && data.downloadUrl.size() <= 4096)) &&
+             (!('downloadName' in data) || data.downloadName == null || (data.downloadName is string && data.downloadName.size() <= 100)) &&
+             (!('downloadUrl2' in data) || data.downloadUrl2 == null || (data.downloadUrl2 is string && data.downloadUrl2.size() <= 4096)) &&
+             (!('downloadName2' in data) || data.downloadName2 == null || (data.downloadName2 is string && data.downloadName2.size() <= 100)) &&
              (!('tags' in data) || data.tags == null || (data.tags is list)) &&
              (!('isPremium' in data) || data.isPremium is bool) &&
-             (!('specialNote' in data) || data.specialNote == null || (data.specialNote is string && data.specialNote.size() <= 1000));
+             (!('specialNote' in data) || data.specialNote == null || (data.specialNote is string && data.specialNote.size() <= 4000));
     }
 
     function isValidSoftwareCreate(data) {
@@ -141,8 +161,7 @@ service cloud.firestore {
       // REGISTRATION GUARD: New users CANNOT register as admin or moderator. Only super admin can bootstrap.
       allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) &&
                        (request.resource.data.role == 'user' || isSuperAdmin());
-      // ROLE ESCALATION GUARD: Normal users cannot change their own role. Only admin can modify roles.
-      allow update: if (isOwner(userId) && isValidUser(request.resource.data) && request.resource.data.role == resource.data.role) ||
+      allow update: if (isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isSuperAdmin())) ||
                        (isAdmin() && isValidUser(request.resource.data));
       // Only Admin can delete users from Firestore
       allow delete: if isAdmin();

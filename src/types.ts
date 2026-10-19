@@ -1,6 +1,6 @@
 import { Timestamp } from 'firebase/firestore';
 
-export type MediaType = 'image' | 'youtube';
+export type MediaType = 'image' | 'youtube' | 'both';
 
 export interface Category {
   id: string;
@@ -15,12 +15,17 @@ export interface Software {
   description: string;
   mediaUrl: string;
   mediaType: MediaType;
+  coverImage?: string;
+  youtubeUrl?: string;
+  galleryImages?: string[];
   isFeatured?: boolean;
   version?: string;
   category?: string;
   subcategory?: string;
   downloadUrl?: string;
+  downloadName?: string;
   downloadUrl2?: string;
+  downloadName2?: string;
   tags?: string[];
   isPremium?: boolean;
   specialNote?: string;

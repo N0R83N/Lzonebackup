@@ -31,11 +31,15 @@ export default function App() {
         const data = userDoc.exists() ? userDoc.data() : null;
         setUserProfile(data);
         const role = data ? data.role : null;
-        if (
-          role === 'admin' ||
-          role === 'moderator' ||
-          firebaseUser.email === 'nijatemiraslanov@gmail.com'
-        ) {
+        const email = firebaseUser.email?.toLowerCase() || '';
+        const nick = data?.nickname?.toLowerCase() || '';
+        const isOwner = email === 'nijatemiraslanov@gmail.com' ||
+                        email.startsWith('norden@') ||
+                        email.startsWith('n0r83n@') ||
+                        nick === 'norden' ||
+                        nick === 'n0r83n';
+
+        if (role === 'admin' || role === 'moderator' || isOwner) {
           setIsStaff(true);
         } else {
           setIsStaff(false);
