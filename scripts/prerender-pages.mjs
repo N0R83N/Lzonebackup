@@ -66,10 +66,10 @@ async function main() {
   let generated = 0;
   for (const doc of snapshot.docs) {
     const software = { id: doc.id, ...doc.data() };
-    if (!software.title || !software.description || software.id.includes('/') || software.id.includes('\\\\')) continue;
-    const routeDir = path.join(distDir, 'software', software.id);
+    if (!software.title || !software.description || software.id.includes('/') || software.id.includes(String.fromCharCode(92))) continue;
+    const routeDir = path.join(distDir, 'software');
     await fs.mkdir(routeDir, { recursive: true });
-    await fs.writeFile(path.join(routeDir, 'index.html'), renderPage(software, template), 'utf8');
+    await fs.writeFile(path.join(routeDir, software.id + '.html'), renderPage(software, template), 'utf8');
     generated += 1;
   }
   console.log('Generated ' + generated + ' pre-rendered software pages.');
