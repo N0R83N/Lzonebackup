@@ -17,8 +17,6 @@ const db = initializeFirestore(app, {
 
 export async function buildSitemapXml(customDomain = 'https://l9zone.nijatemiraslanov.workers.dev') {
   const baseUrl = customDomain.replace(/\/+$/, '');
-  const today = new Date().toISOString().split('T')[0];
-
   const escapeXml = (unsafe) => {
     return unsafe
       .replace(/&/g, '&amp;')
@@ -32,34 +30,28 @@ export async function buildSitemapXml(customDomain = 'https://l9zone.nijatemiras
 
   // 1. Ana Sayfa
   urls.push({
-    loc: `${baseUrl}/`,
-    lastmod: today,
-    changefreq: 'daily',
-    priority: '1.0'
+    loc: `${baseUrl}/`
   });
 
-  // Category and search filters are query variations, not distinct landing pages.\n\n  // 3. Yazılımlar & Oyunlar
+  // Category and search filters are query variations, not distinct landing pages.
+
+  // Software detail pages
   const swSnap = await getDocs(query(collection(db, 'software'), orderBy('createdAt', 'desc')));
   swSnap.docs.forEach((docSnap) => {
     const data = docSnap.data();
-    let dateStr = today;
-    if (data.createdAt && data.createdAt.seconds) {
-      dateStr = new Date(data.createdAt.seconds * 1000).toISOString().split('T')[0];
-    }
+    const dateStr = data.createdAt?.seconds
+      ? new Date(data.createdAt.seconds * 1000).toISOString().split('T')[0]
+      : undefined;
 
     urls.push({
       loc: `${baseUrl}/software/${encodeURIComponent(docSnap.id)}`,
-      lastmod: dateStr,
-      changefreq: 'weekly',
-      priority: data.isFeatured ? '0.9' : '0.8'
+      lastmod: dateStr
     });
   });
 
   const xmlUrls = urls.map(u => `  <url>
     <loc>${escapeXml(u.loc)}</loc>
-    <lastmod>${u.lastmod}</lastmod>
-    <changefreq>${u.changefreq}</changefreq>
-    <priority>${u.priority}</priority>
+${u.lastmod ? `    <lastmod>${u.lastmod}</lastmod>\n` : ''}
   </url>`).join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
