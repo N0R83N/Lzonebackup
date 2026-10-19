@@ -38,34 +38,7 @@ export async function buildSitemapXml(customDomain = 'https://l9zone.nijatemiras
     priority: '1.0'
   });
 
-  // 2. Kategoriler & Alt Kategoriler
-  const catSnap = await getDocs(query(collection(db, 'categories'), orderBy('order', 'asc')));
-  catSnap.docs.forEach((docSnap) => {
-    const data = docSnap.data();
-    const encodedCat = encodeURIComponent(data.name);
-    urls.push({
-      loc: `${baseUrl}/?category=${encodedCat}`,
-      lastmod: today,
-      changefreq: 'daily',
-      priority: '0.9'
-    });
-
-    if (Array.isArray(data.subcategories)) {
-      data.subcategories.forEach((sub) => {
-        if (sub && sub.trim()) {
-          const encodedSub = encodeURIComponent(sub.trim());
-          urls.push({
-            loc: `${baseUrl}/?category=${encodedCat}&subcategory=${encodedSub}`,
-            lastmod: today,
-            changefreq: 'weekly',
-            priority: '0.8'
-          });
-        }
-      });
-    }
-  });
-
-  // 3. Yazılımlar & Oyunlar
+  // Category and search filters are query variations, not distinct landing pages.\n\n  // 3. Yazılımlar & Oyunlar
   const swSnap = await getDocs(query(collection(db, 'software'), orderBy('createdAt', 'desc')));
   swSnap.docs.forEach((docSnap) => {
     const data = docSnap.data();
@@ -75,7 +48,7 @@ export async function buildSitemapXml(customDomain = 'https://l9zone.nijatemiras
     }
 
     urls.push({
-      loc: `${baseUrl}/software/${docSnap.id}`,
+      loc: `${baseUrl}/software/${encodeURIComponent(docSnap.id)}`,
       lastmod: dateStr,
       changefreq: 'weekly',
       priority: data.isFeatured ? '0.9' : '0.8'
