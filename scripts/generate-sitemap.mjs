@@ -38,7 +38,6 @@ export async function buildSitemapXml(customDomain = 'https://l9zone.nijatemiras
   // Software detail pages
   const swSnap = await getDocs(query(collection(db, 'software'), orderBy('createdAt', 'desc')));
   swSnap.docs.forEach((docSnap) => {
-    const data = docSnap.data();
     urls.push({
       loc: `${baseUrl}/software/${encodeURIComponent(docSnap.id)}`,
     });
