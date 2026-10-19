@@ -21,7 +21,7 @@ export default function SitemapManager({ softwares, categories }: SitemapManager
 
   const xmlContent = generateSitemapXml(softwares, categories, domain);
 
-  // Toplam URL hesaplama (Ana Sayfa + Kategoriler + Alt Kategoriler + Yazılımlar)
+  // Panelde gösterilen kategori sayıları içerik yönetimi içindir; sitemap yalnızca canonical sayfaları listeler.
   const uniqueCategories = new Set<string>();
   let subcategoryCount = 0;
   categories.forEach(c => {
@@ -35,7 +35,7 @@ export default function SitemapManager({ softwares, categories }: SitemapManager
       uniqueCategories.add(s.category);
     }
   });
-  const totalUrls = 1 + uniqueCategories.size + subcategoryCount + softwares.length;
+  const totalUrls = 1 + softwares.length;
 
   const handleCopy = async () => {
     try {
@@ -75,7 +75,7 @@ export default function SitemapManager({ softwares, categories }: SitemapManager
                 </span>
               </h2>
               <p className="text-sm text-zinc-400 mt-0.5">
-                Google Search Console ve botların sitenizdeki her oyunu, programı ve kategoriyi dizine eklemesi için otomatik XML haritası.
+                Canlı sayfalar ve içerik detayları için sitemap önizlemesi; indirme, canlı dosyayı yayımlamaz.
               </p>
             </div>
           </div>
@@ -112,17 +112,16 @@ export default function SitemapManager({ softwares, categories }: SitemapManager
         </div>
       </div>
 
-      {/* Bilgilendirme Kutusu: Neden önceki harita içerikleri görmüyordu? */}
       <div className="bg-gradient-to-r from-blue-950/40 to-indigo-950/30 border border-blue-500/30 rounded-2xl p-5 space-y-2">
         <div className="flex items-center gap-2.5 text-blue-300 font-semibold text-sm">
           <Info className="w-5 h-5 text-blue-400 shrink-0" />
-          <span>Neden Önceki Sitemap İçerikleri Okuyamıyordu ve Nasıl Çözüldü?</span>
+          <span>Site haritası hakkında</span>
         </div>
         <p className="text-xs text-zinc-300 leading-relaxed">
-          Siteniz modern bir React Tek Sayfa Uygulamasıdır (SPA) ve paylaştığınız içerikler doğrudan <strong>Google Firebase Firestore</strong> veritabanına kaydedilir. Ancak sunucudaki <code className="text-amber-300 bg-black/40 px-1 py-0.5 rounded">/public/sitemap.xml</code> dosyası ilk oluşturulduğunda statik bir şablon olduğundan, veritabanına sonradan eklediğiniz içerikler bu dosyada yer almıyordu.
+          Bu panel XML önizlemesi üretir ve dosyayı bilgisayarına indirir; canlı <code>/sitemap.xml</code> dosyasını kendiliğinden yayımlamaz. Canlı sitemap, dağıtım derlemesinde Firestore'daki herkese açık yazılımlardan oluşturulur. Yeni içeriklerin sitemap'e eklenmesi için sitenin yeniden dağıtılması gerekir.
         </p>
-        <p className="text-xs text-emerald-300/90 leading-relaxed">
-          ✔ <strong>Çözüldü:</strong> Artık veritabanınızdaki tüm <strong>{softwares.length} oyun ve program</strong>, <strong>{uniqueCategories.size} ana kategori</strong> ve <strong>{subcategoryCount} alt kategori</strong> (toplam <strong>{totalUrls} URL</strong>) otomatik olarak taranıp <code className="text-emerald-300 bg-black/40 px-1 py-0.5 rounded">sitemap.xml</code> içine aktarılmıştır.
+        <p className="text-xs text-zinc-300 leading-relaxed">
+          Liste yalnızca ana sayfayı ve içerik detaylarını içerir. Filtre ve arama parametreleri ayrı içerik sayfaları olmadığı için eklenmez. Sitemap sayfaları keşfetmeye yardımcı olur; dizine eklenmeyi veya sıralamayı garanti etmez.
         </p>
       </div>
 
@@ -136,7 +135,7 @@ export default function SitemapManager({ softwares, categories }: SitemapManager
       {/* İstatistikler */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-zinc-950/70 border border-zinc-800 rounded-2xl p-4">
-          <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Taranan Toplam URL</p>
+          <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Site Haritası URL Sayısı</p>
           <p className="text-2xl font-bold text-emerald-400 mt-1">{totalUrls}</p>
         </div>
         <div className="bg-zinc-950/70 border border-zinc-800 rounded-2xl p-4">
@@ -153,18 +152,8 @@ export default function SitemapManager({ softwares, categories }: SitemapManager
         </div>
       </div>
 
-      {/* Search Console "URL'ye izin verilmiyor" Hatası ve Çözüm Bilgisi */}
-      <div className="bg-gradient-to-r from-red-950/40 via-amber-950/20 to-zinc-950 border border-red-500/30 rounded-2xl p-5 space-y-2.5">
-        <div className="flex items-center gap-2 text-red-300 font-semibold text-sm">
-          <ShieldAlert className="w-5 h-5 text-red-400 shrink-0" />
-          <span>Google Search Console: "URL'ye izin verilmiyor" Hatası Neden Oldu?</span>
-        </div>
-        <p className="text-xs text-zinc-300 leading-relaxed">
-          Google Search Console'da kayıtlı mülkünüz <strong className="text-amber-300 font-mono">https://l9zone.nijatemiraslanov.workers.dev/</strong> adresidir. Ancak önceki sitemap dosyasındaki bağlantılar <code className="text-red-300 bg-black/40 px-1 py-0.5 rounded">https://l9zone.pages.dev/</code> olarak üretildiği için Google bunu <em>farklı bir alan adına (cross-domain) ait</em> kabul etmiş ve <strong>"Bu URL'ye, bu yerdeki bir Site Haritası için izin verilmiyor"</strong> uyarısı vermiştir.
-        </p>
-        <p className="text-xs text-emerald-300 leading-relaxed font-medium">
-          ✔ <strong>Çözüldü:</strong> Haritanız artık doğrudan <code className="text-emerald-200 bg-black/50 px-1.5 py-0.5 rounded font-mono">https://l9zone.nijatemiraslanov.workers.dev</code> olarak güncellenmiştir. Search Console'da haritayı yeniden gönderdiğinizde tüm içerikleriniz onaylanacaktır.
-        </p>
+      <div className="bg-zinc-950/50 border border-zinc-800 rounded-2xl p-5 text-xs text-zinc-300 leading-relaxed">
+        Sitemap içindeki alan adı Search Console'da doğruladığın mülkle aynı olmalı. Bu alan XML önizlemesini değiştirir; Google'ın sitemap'i kabul edeceğini veya URL'leri dizine ekleyeceğini garanti etmez.
       </div>
 
       {/* Canlı Alan Adı Ayarı */}
@@ -219,18 +208,6 @@ export default function SitemapManager({ softwares, categories }: SitemapManager
             )}
           >
             l9zone.nijatemiraslanov.workers.dev (Search Console Mülkü)
-          </button>
-          <button
-            type="button"
-            onClick={() => setDomain('https://l9zone.pages.dev')}
-            className={cn(
-              "text-xs px-2.5 py-1 rounded-lg border font-mono transition-all cursor-pointer",
-              domain === 'https://l9zone.pages.dev'
-                ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
-                : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-white"
-            )}
-          >
-            l9zone.pages.dev
           </button>
         </div>
       </div>
@@ -345,7 +322,7 @@ export default function SitemapManager({ softwares, categories }: SitemapManager
           <li><strong>Google Search Console</strong> mülkünüze gidin.</li>
           <li>Sol menüdeki <strong>"Site Haritaları" (Sitemaps)</strong> sekmesine tıklayın.</li>
           <li>Kutuya yalnızca <code>sitemap.xml</code> yazın ve <strong>"Gönder"</strong> butonuna basın.</li>
-          <li>Google botları haritanızı okuyup içindeki tüm <strong>{softwares.length} oyunu, yazılımı ve kategorileri</strong> dizine ekleyecektir.</li>
+          <li>Google bu URL’leri keşfedebilir; taranma ve dizine eklenme garanti edilmez.</li>
         </ol>
       </div>
     </div>

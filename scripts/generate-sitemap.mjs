@@ -17,8 +17,6 @@ const db = initializeFirestore(app, {
 
 export async function buildSitemapXml(customDomain = 'https://l9zone.nijatemiraslanov.workers.dev') {
   const baseUrl = customDomain.replace(/\/+$/, '');
-  const today = new Date().toISOString().split('T')[0];
-
   const escapeXml = (unsafe) => {
     return unsafe
       .replace(/&/g, '&amp;')
@@ -32,61 +30,21 @@ export async function buildSitemapXml(customDomain = 'https://l9zone.nijatemiras
 
   // 1. Ana Sayfa
   urls.push({
-    loc: `${baseUrl}/`,
-    lastmod: today,
-    changefreq: 'daily',
-    priority: '1.0'
+    loc: `${baseUrl}/`
   });
 
-  // 2. Kategoriler & Alt Kategoriler
-  const catSnap = await getDocs(query(collection(db, 'categories'), orderBy('order', 'asc')));
-  catSnap.docs.forEach((docSnap) => {
-    const data = docSnap.data();
-    const encodedCat = encodeURIComponent(data.name);
-    urls.push({
-      loc: `${baseUrl}/?category=${encodedCat}`,
-      lastmod: today,
-      changefreq: 'daily',
-      priority: '0.9'
-    });
+  // Category and search filters are query variations, not distinct landing pages.
 
-    if (Array.isArray(data.subcategories)) {
-      data.subcategories.forEach((sub) => {
-        if (sub && sub.trim()) {
-          const encodedSub = encodeURIComponent(sub.trim());
-          urls.push({
-            loc: `${baseUrl}/?category=${encodedCat}&subcategory=${encodedSub}`,
-            lastmod: today,
-            changefreq: 'weekly',
-            priority: '0.8'
-          });
-        }
-      });
-    }
-  });
-
-  // 3. Yazılımlar & Oyunlar
+  // Software detail pages
   const swSnap = await getDocs(query(collection(db, 'software'), orderBy('createdAt', 'desc')));
   swSnap.docs.forEach((docSnap) => {
-    const data = docSnap.data();
-    let dateStr = today;
-    if (data.createdAt && data.createdAt.seconds) {
-      dateStr = new Date(data.createdAt.seconds * 1000).toISOString().split('T')[0];
-    }
-
     urls.push({
-      loc: `${baseUrl}/software/${docSnap.id}`,
-      lastmod: dateStr,
-      changefreq: 'weekly',
-      priority: data.isFeatured ? '0.9' : '0.8'
+      loc: `${baseUrl}/software/${encodeURIComponent(docSnap.id)}`,
     });
   });
 
   const xmlUrls = urls.map(u => `  <url>
     <loc>${escapeXml(u.loc)}</loc>
-    <lastmod>${u.lastmod}</lastmod>
-    <changefreq>${u.changefreq}</changefreq>
-    <priority>${u.priority}</priority>
   </url>`).join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
