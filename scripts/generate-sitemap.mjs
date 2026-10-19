@@ -39,19 +39,13 @@ export async function buildSitemapXml(customDomain = 'https://l9zone.nijatemiras
   const swSnap = await getDocs(query(collection(db, 'software'), orderBy('createdAt', 'desc')));
   swSnap.docs.forEach((docSnap) => {
     const data = docSnap.data();
-    const dateStr = data.createdAt?.seconds
-      ? new Date(data.createdAt.seconds * 1000).toISOString().split('T')[0]
-      : undefined;
-
     urls.push({
       loc: `${baseUrl}/software/${encodeURIComponent(docSnap.id)}`,
-      lastmod: dateStr
     });
   });
 
   const xmlUrls = urls.map(u => `  <url>
     <loc>${escapeXml(u.loc)}</loc>
-${u.lastmod ? `    <lastmod>${u.lastmod}</lastmod>\n` : ''}
   </url>`).join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
