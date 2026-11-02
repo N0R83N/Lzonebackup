@@ -1,26 +1,79 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# L9Zone
 
-# Run and deploy your AI Studio app
+L9Zone'u oyun, program ve teknoloji içeriklerini düzenli bir katalogda bir araya getirmek için geliştiriyorum. İçerikler kategori ve alt kategorilere göre gezilebilir; arama ile başlık, açıklama ve etiketler içinde filtrelenebilir.
 
-This contains everything you need to run your app locally.
+## Neler var?
 
-View your app in AI Studio: https://ai.studio/apps/91631878-ee6b-4670-9a8d-559666666ae7
+- Öne çıkan ve yeni eklenen içerikler için ana sayfa
+- Kategori, alt kategori ve arama filtreleri
+- Her içerik için ayrı detay sayfası
+- E-posta ve Google ile hesap oluşturma ve giriş
+- Kullanıcı profili ve şifre sıfırlama
+- Yetkili kullanıcılar için içerik ve kategori yönetimi
+- Ziyaretçi istatistikleri
 
-## Run Locally
+Katalog; oyunlar, yazılımlar, işletim sistemleri ve mobil/emülatör içerikleri gibi başlıklara ayrılır. Varsayılan kategori yapısı `src/lib/categories.ts` dosyasında bulunur.
 
-**Prerequisites:**  Node.js
+## Kullanılan teknolojiler
 
+React, TypeScript, Vite, Tailwind CSS ve Firebase (Authentication ve Cloud Firestore).
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Yerelde çalıştırma
 
-## Oyun ve program kategorileri
+Gereksinim: Node.js 20 veya üzeri.
 
-Dağıtımdan sonra admin hesabıyla **Admin → Kategoriler → Oyun & Program Kategorilerini Ekle** düğmesine basın. Dört ana kategori ve 39 alt başlık Firestore'a tek işlemde kaydedilir; menü ve içerik formu otomatik güncellenir. Mevcut başlıklar, sıralamalar ve içerikler korunur. Düğme tekrar kullanıldığında aynı alt başlıklar çoğaltılmaz. Sonrasında kategoriler panelden düzenlenebilir veya silinebilir.
+```bash
+npm install
+npm run dev
+```
 
-Başlıklar `src/lib/categories.ts` içinde tanımlıdır. Filtre bağlantıları Türkçe karakterler ve `&` işareti için URLSearchParams kullanır.
+Vite geliştirme sunucusu terminalde gösterdiği yerel adreste açılır.
+
+Tür kontrolü için:
+
+```bash
+npm run lint
+```
+
+Üretim derlemesi:
+
+```bash
+npm run build
+```
+
+Bu komut Firestore'daki içerikleri kullanarak site haritası ve içerik detay sayfaları da üretir. Firestore erişimi yoksa bu üretim adımları tamamlanmayabilir.
+
+## Firebase ayarları
+
+Uygulama Firebase Authentication ve Cloud Firestore kullanır. Web uygulaması ayarları `firebase-applet-config.json` dosyasından okunur.
+
+Projeyi kendi Firebase projenle çalıştıracaksan:
+
+1. Firebase'de bir Web uygulaması ve Firestore veritabanı oluştur.
+2. Firebase Authentication'da kullanacağın giriş yöntemlerini etkinleştir.
+3. Firebase Web uygulaması bilgilerini `firebase-applet-config.json` içine gir.
+4. Firestore kurallarını `firestore.rules` dosyasına göre gözden geçirip Firebase Console'dan yayımla.
+5. Yayın adresini Firebase Authentication'daki yetkili alan adlarına ekle.
+
+Firebase yapılandırmasını ve güvenlik kurallarını yayımlamadan önce kendi projen için kontrol et. Yönetici erişimini yalnızca yetkili hesaplara ver.
+
+## GitHub Pages
+
+Depo herkese açık olduğu için GitHub Pages'te ücretsiz yayınlanabilir. `main` dalına gönderilen değişiklikler `.github/workflows/pages.yml` iş akışıyla otomatik dağıtılır.
+
+Yayın adresi: [https://n0r83n.github.io/Lzonebackup/](https://n0r83n.github.io/Lzonebackup/)
+
+GitHub Pages, projeyi `/Lzonebackup/` altında sunar. Vite taban yolu ve yönlendirici bu yola göre ayarlanmıştır. İş akışı ayrıca uygulama içindeki bağlantıların doğrudan açılabilmesi için bir `404.html` yedeği üretir.
+
+## Kategori yapısını ekleme
+
+İlk kurulumdan sonra yönetici hesabıyla **Admin → Kategoriler → Oyun & Program Kategorilerini Ekle** seçeneğini kullanarak varsayılan kategori yapısını Firestore'a ekleyebilirsin. Bu işlem tekrarlandığında mevcut kategoriler çoğaltılmaz.
+
+## Proje yapısı
+
+- `src/pages` — ana sayfa, içerik detayları ve profil
+- `src/components` — gezinme, giriş ve yönetim arayüzleri
+- `src/lib` — kategori tanımları ve yardımcı işlevler
+- `firestore.rules` — Firestore güvenlik kuralları
+- `.github/workflows/pages.yml` — GitHub Pages dağıtım iş akışı
+
