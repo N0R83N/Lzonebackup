@@ -62,7 +62,7 @@ export default function App() {
   }
 
   return (
-    <Router>
+    <Router basename={import.meta.env.BASE_URL}>
       <AppTracker user={user} userProfile={userProfile} />
       <div className="min-h-screen bg-black selection:bg-blue-500/30 selection:text-blue-200">
         <Navbar />
